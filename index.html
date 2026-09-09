@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="theme-color" content="#0E3B2B">
+<title>Shafran — меню и заказ</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lobster&family=Manrope:wght@500;700;800&display=swap">
+<style>
+:root{
+  --dark:#0E3B2B;--dark-2:#123F2F;--paper:#F3F1EC;--card:#FFFFFF;
+  --green:#3E7A57;--green-lt:#DCEAE0;--lav:#C9C3E6;--line:#DCD8CC;
+  --ink:#1B241D;--ink-2:#5B6960;--gold:#B9740A;--red:#B02A2A;--red-bg:#FBE6E6;
+  --r:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;background:var(--paper);color:var(--ink);line-height:1.4}
+.wrap{max-width:720px;margin:0 auto;padding:0 14px 110px}
+
+/* header */
+header.hero{background:linear-gradient(160deg,var(--dark),var(--dark-2));color:#fff;padding:26px 16px 22px;margin-bottom:16px;border-radius:0 0 22px 22px;text-align:center}
+header.hero .logo{width:132px;height:132px;border-radius:50%;background:radial-gradient(circle at 50% 28%,#1d5a41,#0a2a1e 72%);display:block;margin:0 auto 8px;border:2px solid rgba(255,255,255,.18);box-shadow:0 6px 18px rgba(0,0,0,.35)}
+header.hero .logo svg{width:100%;height:100%}
+header.hero h1{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+header.hero p{font-size:12px;color:#cfe3d6;margin-top:2px;letter-spacing:.14em;text-transform:uppercase}
+
+/* tabs */
+.tabs{position:sticky;top:0;z-index:40;background:var(--paper);display:flex;gap:6px;overflow-x:auto;padding:8px 2px 10px;margin-bottom:6px;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:0 0 auto;font-size:13px;font-weight:700;padding:8px 14px;border-radius:20px;background:var(--card);border:1px solid var(--line);color:var(--ink-2);white-space:nowrap;cursor:pointer}
+.tab.on{background:var(--dark);border-color:var(--dark);color:#fff}
+
+/* sections */
+section.cat{margin:18px 0}
+section.cat h2{font-size:18px;font-weight:800;color:var(--dark);border-bottom:2px solid var(--green-lt);padding-bottom:6px;margin-bottom:8px}
+.item{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 12px;margin-bottom:8px}
+.item .info{flex:1;min-width:0}
+.item .nm{font-weight:700;font-size:14.5px}
+.item .meta{font-size:12px;color:var(--ink-2);margin-top:1px}
+.item .price{font-weight:800;color:var(--dark);font-size:14px;white-space:nowrap;margin-right:2px}
+.qty{display:flex;align-items:center;gap:0;flex:0 0 auto}
+.qty button{width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:var(--paper);font-size:16px;font-weight:700;color:var(--dark);cursor:pointer}
+.qty button:active{transform:scale(.94)}
+.qty .n{width:26px;text-align:center;font-weight:700;font-size:13px}
+.addbtn{width:34px;height:34px;border-radius:9px;border:none;background:var(--dark);color:#fff;font-size:19px;font-weight:700;cursor:pointer;flex:0 0 34px}
+.addbtn:active{transform:scale(.94)}
+
+/* cart bar */
+.cartbar{position:fixed;left:0;right:0;bottom:0;z-index:60;background:var(--dark);color:#fff;padding:12px 16px calc(12px + env(safe-area-inset-bottom));display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;box-shadow:0 -6px 18px rgba(0,0,0,.18);transform:translateY(110%);transition:transform .25s}
+.cartbar.show{transform:translateY(0)}
+.cartbar .cnt{background:var(--lav);color:var(--dark);font-weight:800;font-size:12px;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;margin-right:8px}
+.cartbar .lbl{font-weight:800;font-size:15px;flex:1;letter-spacing:.02em}
+.cartbar .sum{font-weight:800;font-size:15px}
+
+/* overlay + sheet */
+.overlay{position:fixed;inset:0;background:rgba(10,20,15,.5);z-index:80;display:none}
+.overlay.on{display:block}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:90;background:var(--paper);border-radius:18px 18px 0 0;max-height:88vh;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .28s;box-shadow:0 -8px 30px rgba(0,0,0,.25)}
+.sheet.on{transform:translateY(0)}
+.sheet .shd{padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
+.sheet .shd h3{font-size:17px;font-weight:800;color:var(--dark)}
+.sheet .close{width:30px;height:30px;border-radius:50%;border:none;background:var(--card);border:1px solid var(--line);font-size:16px;cursor:pointer;color:var(--ink-2)}
+.sheet .body{overflow-y:auto;padding:12px 16px}
+.cline{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.cline:last-child{border-bottom:none}
+.cline .nm{font-weight:700;font-size:14px;flex:1}
+.cline .price{font-weight:700;font-size:13px;color:var(--dark);white-space:nowrap}
+.rm{background:none;border:none;color:var(--red);font-size:18px;cursor:pointer;padding:0 4px}
+.empty{text-align:center;color:var(--ink-2);font-size:14px;padding:30px 10px}
+
+.field{margin-bottom:12px}
+.field label{display:block;font-size:12px;font-weight:700;color:var(--ink-2);margin-bottom:5px;text-transform:uppercase;letter-spacing:.03em}
+.field input,.field textarea{width:100%;font:inherit;font-size:15px;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+.field input:focus,.field textarea:focus{outline:none;border-color:var(--dark)}
+.field textarea{resize:vertical;min-height:56px}
+.seg{display:flex;gap:8px}
+.seg button{flex:1;font:inherit;font-size:13px;font-weight:700;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink-2);cursor:pointer}
+.seg button.on{background:var(--dark);border-color:var(--dark);color:#fff}
+.addr-wrap{display:none}
+.addr-wrap.show{display:block}
+
+.totals{padding:10px 0 0;font-size:14px;display:flex;justify-content:space-between;font-weight:800;color:var(--dark)}
+.sfoot{padding:12px 16px calc(14px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--paper)}
+.big{width:100%;font:inherit;font-size:15px;font-weight:800;padding:14px;border-radius:12px;border:none;background:var(--dark);color:#fff;cursor:pointer}
+.big:active{transform:scale(.985)}
+.big[disabled]{opacity:.5}
+.err{color:var(--red);font-size:12px;margin-top:6px;display:none}
+.hint{font-size:11px;color:var(--ink-2);margin-top:8px;text-align:center}
+
+footer.note{text-align:center;color:var(--ink-2);font-size:12px;padding:20px 10px}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="logo">
+    <svg viewBox="0 0 200 200" role="img" aria-label="Ресторан Shafran">
+      <defs>
+        <radialGradient id="bg" cx="50%" cy="30%" r="75%">
+          <stop offset="0%" stop-color="#1d5a41"/>
+          <stop offset="100%" stop-color="#0a2a1e"/>
+        </radialGradient>
+        <linearGradient id="petal" x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0%" stop-color="#3d2454"/>
+          <stop offset="55%" stop-color="#6d4a8f"/>
+          <stop offset="100%" stop-color="#a483c2"/>
+        </linearGradient>
+        <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+          <feGaussianBlur stdDeviation="2.4" result="b"/>
+          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+      <circle cx="100" cy="100" r="98" fill="url(#bg)"/>
+      <circle cx="100" cy="100" r="88" fill="none" stroke="rgba(255,255,255,.14)" stroke-width="1.2"/>
+      <ellipse cx="100" cy="62" rx="34" ry="26" fill="#4f9c72" opacity=".38" filter="url(#glow)"/>
+      <g fill="#F2FBF5" filter="url(#glow)">
+        <path d="M100 92 C88 84 82 72 86 58 C96 66 100 78 100 92 Z" transform="rotate(-6 100 92)" opacity=".95"/>
+        <path d="M100 92 C90 82 87 68 94 54 C102 64 104 78 100 92 Z" opacity=".98"/>
+        <path d="M100 92 C110 80 115 64 110 48 C122 58 122 76 100 92 Z" opacity=".98"/>
+        <path d="M100 92 C112 88 122 78 122 64 C130 74 126 88 100 92 Z" opacity=".9"/>
+      </g>
+      <text x="100" y="124" text-anchor="middle" font-family="Manrope,Arial,sans-serif" font-weight="800" font-size="11" letter-spacing="3.2" fill="#DCEAE0">РЕСТОРАН</text>
+      <text x="100" y="156" text-anchor="middle" font-family="'Lobster',cursive" font-size="36" fill="#FFFFFF">Shafran</text>
+      <g transform="translate(100,210)">
+        <g fill="url(#petal)">
+          <path d="M0 0 C-18-16 -22-38 -11-58 C-3-40 3-18 0 0 Z" transform="rotate(-32)"/>
+          <path d="M0 0 C-10-20 -9-42 0-62 C9-42 10-20 0 0 Z"/>
+          <path d="M0 0 C18-16 22-38 11-58 C3-40 -3-18 0 0 Z" transform="rotate(32)"/>
+        </g>
+        <g stroke="#D9A441" stroke-width="1.3" stroke-linecap="round">
+          <path d="M0 0 L-9-25"/><path d="M0 0 L0-30"/><path d="M0 0 L9-25"/>
+        </g>
+      </g>
+    </svg>
+  </div>
+  <h1>Shafran</h1>
+  <p>Ресторан · меню и заказ</p>
+</header>
+
+<div class="wrap">
+  <div class="tabs" id="tabs"></div>
+  <div id="menu"></div>
+  <footer class="note">Цены указаны в рублях. Состав и наличие блюд уточняйте у официанта.</footer>
+</div>
+
+<div class="cartbar" id="cartbar">
+  <span class="cnt" id="cbCnt">0</span>
+  <span class="lbl">Заказать</span>
+  <span class="sum" id="cbSum">0 ₽</span>
+</div>
+
+<div class="overlay" id="overlay"></div>
+
+<div class="sheet" id="cartSheet">
+  <div class="shd"><h3>Ваш заказ</h3><button class="close" data-close>✕</button></div>
+  <div class="body" id="cartBody"></div>
+  <div class="sfoot" id="cartFoot" style="display:none">
+    <div class="totals"><span>Итого</span><span id="cartTotal">0 ₽</span></div>
+    <button class="big" id="toOrder" style="margin-top:10px">Оформить заказ</button>
+  </div>
+</div>
+
+<div class="sheet" id="orderSheet">
+  <div class="shd"><h3>Оформление заказа</h3><button class="close" data-close>✕</button></div>
+  <div class="body">
+    <div class="field">
+      <label>Способ получения</label>
+      <div class="seg">
+        <button type="button" id="segDelivery" class="on">Доставка</button>
+        <button type="button" id="segPickup">Самовывоз</button>
+      </div>
+    </div>
+    <div class="field"><label>Ваше имя</label><input id="fName" placeholder="Имя"></div>
+    <div class="field"><label>Телефон</label><input id="fPhone" type="tel" placeholder="+7 ___ ___-__-__"></div>
+    <div class="field addr-wrap show" id="addrWrap"><label>Адрес доставки</label><input id="fAddr" placeholder="Улица, дом, квартира"></div>
+    <div class="field">
+      <label>Оплата</label>
+      <div class="seg">
+        <button type="button" id="payCard" class="on">Картой</button>
+        <button type="button" id="payCash">Наличными</button>
+      </div>
+    </div>
+    <div class="field"><label>Комментарий (необязательно)</label><textarea id="fComment" placeholder="Пожелания к заказу"></textarea></div>
+    <div class="err" id="formErr">Заполните имя, телефон и адрес.</div>
+  </div>
+  <div class="sfoot">
+    <div class="totals"><span>К оплате</span><span id="orderTotal">0 ₽</span></div>
+    <button class="big" id="sendOrder" style="margin-top:10px">Отправить в WhatsApp</button>
+    <div class="hint">Заказ откроется в WhatsApp — просто нажмите «Отправить» в чате.</div>
+  </div>
+</div>
+
+<script>
+/* Номер ресторана для приёма заказов в WhatsApp */
+var RESTAURANT_PHONE = '89887960644';
+
+var MENU = [
+ {cat:'Салаты', items:[
+   ['Цезарь с курицей',280],['Цезарь с креветками',330],['Греческий',320],
+   ['Баклажанный',350],['Овощная нарезка',300],['Горный салат',350]
+ ]},
+ {cat:'Супы', items:[
+   ['Сырный суп',250],['Грибной суп',250],['Том-ям',550],['Лагман',220]
+ ]},
+ {cat:'Пицца', items:[
+   ['Аль-сальмоне',410],['Даргинская',410],['Пепперони',390],['Барбекю',390],
+   ['5 сыров',390],['Баварская',390],['Цезарь',410],['Морская',490],
+   ['Мясная',380],['Ассорти',390],['Сладкая',300],['Маргарита',320],['Хачапури',300]
+ ]},
+ {cat:'Фаст фуд', items:[
+   ['Бургер шафран',350],['Бургер цезарь',320],['Бургер гриль',320],
+   ['Бургер говяжий',330],['Гамбургер',220],['Чизбургер',250]
+ ]},
+ {cat:'Горячее', items:[
+   ['Даргинский хинкал',410],['Курзе с мясом',290],['Курзе с творогом',280],
+   ['Блюдо от шефа',430],['Курица в грибном соусе',350],['Фетучини с курицей',290],
+   ['Фетучини с лососем',350],['Фетучини с креветками',350],['Лапша удон',280],
+   ['Куриное филе с рисом',350],['Скумбрия с овощами гриль',450],
+   ['Рыба дорадо',680],['Стейк из лосося',750]
+ ]},
+ {cat:'Роллы', items:[
+   ['Ролл Токио',370],['Ролл запечённый лосось',420],['Ролл осенний бриз',290],
+   ['Ролл касабланка',370],['Ролл нежный',370],['Лёгкий ролл с копчёным лососем',370],
+   ['Ролл радуга',390],['Ролл канада',420],['Ролл калифорния с лососем',330],
+   ['Ролл ойси',430],['Ролл цезарь с курицей',310],['Ролл цезарь с креветками',380],
+   ['Калифорния с обжаренным лососем',380],['Ролл унаги маки',280],['Ролл филадельфия',410]
+ ]},
+ {cat:'Закуски', items:[
+   ['Картошка фри',120],['Картошка по-деревенски',130],['Стрипсы',190],
+   ['Эби темпура в кляре',350],['Эби темпура в сухарях',350]
+ ]},
+ {cat:'Кофе', items:[
+   ['Американо',150],['Эспрессо',150],['Капучино',150],['Латте',150],
+   ['Флэт уайт',160],['Раф',200],['Раф с урбечом',230],['Айс лате',150],
+   ['Айс кофе',200],['Айс кофе с урбечом',230]
+ ]},
+ {cat:'Чай', items:[
+   ['Чёрный',150],['Изумрудный',180],['Облепиховый',220],['Марокканский',200],
+   ['Бергамотовый',150],['С чабрецом',150],['Лесные ягоды',190]
+ ]},
+ {cat:'Коктейль', items:[
+   ['Банановый',200],['Клубничный',200],['Сливочный',200],['Ягодный',220],['Пеликан',250]
+ ]},
+ {cat:'Мохито', items:[
+   ['Мохито клубничный 0.4л',220],['Мохито голубая лагуна 0.4л',220],
+   ['Мохито классический 0.4л',220],['Мохито ягодный 0.4л',230]
+ ]},
+ {cat:'Фреш', items:[
+   ['Апельсиновый фреш',270],['Гранатовый фреш',290],['Яблочный фреш',220],['Морковный фреш',220]
+ ]},
+ {cat:'Смузи', items:[
+   ['Смузи ягодный',250],['Смузи тропический',250]
+ ]},
+ {cat:'Десерты', items:[
+   ['Фондан',290],['Венская вафля',270],['Прованс',250],['Меренговый рулет',220],
+   ['Сан Себастьян фисташковый',320],['Сан Себастьян с миндалём',320],
+   ['Медовая тарелка',550],['Сырники',250],['Мороженое',180]
+ ]}
+];
+
+var cart = {}; // id -> {nm, price, qty}
+function idOf(cat,nm){return cat+'|'+nm}
+
+function renderMenu(){
+  var tabs=document.getElementById('tabs');
+  var menu=document.getElementById('menu');
+  tabs.innerHTML='';menu.innerHTML='';
+  MENU.forEach(function(sec,i){
+    var t=document.createElement('div');
+    t.className='tab'+(i===0?' on':'');
+    t.textContent=sec.cat;
+    t.dataset.idx=i;
+    t.onclick=function(){
+      document.getElementById('sec-'+i).scrollIntoView({behavior:'smooth',block:'start'});
+    };
+    tabs.appendChild(t);
+
+    var s=document.createElement('section');
+    s.className='cat';
+    s.id='sec-'+i;
+    var h=document.createElement('h2');h.textContent=sec.cat;s.appendChild(h);
+    sec.items.forEach(function(it){
+      var nm=it[0],price=it[1];
+      var id=idOf(sec.cat,nm);
+      var row=document.createElement('div');
+      row.className='item';
+      row.innerHTML=
+        '<div class="info"><div class="nm"></div></div>'+
+        '<div class="price"></div>'+
+        '<div class="ctrl"></div>';
+      row.querySelector('.nm').textContent=nm;
+      row.querySelector('.price').textContent=price+' ₽';
+      var ctrl=row.querySelector('.ctrl');
+      renderCtrl(ctrl,id,nm,price);
+      row.dataset.id=id;
+      s.appendChild(row);
+    });
+    menu.appendChild(s);
+  });
+
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(en.isIntersecting){
+        var idx=en.target.id.split('-')[1];
+        Array.prototype.forEach.call(tabs.children,function(t,i){t.classList.toggle('on',String(i)===idx)});
+      }
+    });
+  },{rootMargin:'-90px 0px -70% 0px'});
+  document.querySelectorAll('section.cat').forEach(function(s){io.observe(s)});
+}
+
+function renderCtrl(el,id,nm,price){
+  var q=(cart[id]||{}).qty||0;
+  if(q>0){
+    el.innerHTML='<div class="qty"><button class="minus">−</button><span class="n"></span><button class="plus">+</button></div>';
+    el.querySelector('.n').textContent=q;
+    el.querySelector('.minus').onclick=function(){changeQty(id,nm,price,-1)};
+    el.querySelector('.plus').onclick=function(){changeQty(id,nm,price,1)};
+  }else{
+    el.innerHTML='<button class="addbtn">+</button>';
+    el.querySelector('.addbtn').onclick=function(){changeQty(id,nm,price,1)};
+  }
+}
+
+function changeQty(id,nm,price,d){
+  var c=cart[id]||{nm:nm,price:price,qty:0};
+  c.qty+=d;
+  if(c.qty<=0){delete cart[id]}else{cart[id]=c}
+  var row=document.querySelector('.item[data-id="'+CSS.escape(id)+'"]');
+  if(row) renderCtrl(row.querySelector('.ctrl'),id,nm,price);
+  updateCartBar();
+}
+
+function cartTotals(){
+  var cnt=0,sum=0;
+  Object.keys(cart).forEach(function(k){cnt+=cart[k].qty;sum+=cart[k].qty*cart[k].price});
+  return {cnt:cnt,sum:sum};
+}
+
+function updateCartBar(){
+  var t=cartTotals();
+  var bar=document.getElementById('cartbar');
+  document.getElementById('cbCnt').textContent=t.cnt;
+  document.getElementById('cbSum').textContent=t.sum+' ₽';
+  bar.classList.toggle('show',t.cnt>0);
+  if(document.getElementById('cartSheet').classList.contains('on')) renderCartSheet();
+}
+
+function renderCartSheet(){
+  var body=document.getElementById('cartBody');
+  var foot=document.getElementById('cartFoot');
+  var keys=Object.keys(cart);
+  if(keys.length===0){
+    body.innerHTML='<div class="empty">Корзина пуста.<br>Добавьте блюда из меню.</div>';
+    foot.style.display='none';
+    return;
+  }
+  body.innerHTML='';
+  keys.forEach(function(id){
+    var c=cart[id];
+    var line=document.createElement('div');
+    line.className='cline';
+    line.innerHTML='<div class="nm"></div><div class="qty"><button class="minus">−</button><span class="n"></span><button class="plus">+</button></div><div class="price"></div>';
+    line.querySelector('.nm').textContent=c.nm;
+    line.querySelector('.n').textContent=c.qty;
+    line.querySelector('.price').textContent=(c.qty*c.price)+' ₽';
+    line.querySelector('.minus').onclick=function(){
+      var parts=id.split('|');changeQty(id,c.nm,c.price,-1);renderCartSheet();
+      var row=document.querySelector('.item[data-id="'+CSS.escape(id)+'"]');
+      if(row) renderCtrl(row.querySelector('.ctrl'),id,c.nm,c.price);
+    };
+    line.querySelector('.plus').onclick=function(){
+      changeQty(id,c.nm,c.price,1);renderCartSheet();
+      var row=document.querySelector('.item[data-id="'+CSS.escape(id)+'"]');
+      if(row) renderCtrl(row.querySelector('.ctrl'),id,c.nm,c.price);
+    };
+    body.appendChild(line);
+  });
+  var t=cartTotals();
+  document.getElementById('cartTotal').textContent=t.sum+' ₽';
+  foot.style.display='block';
+}
+
+function openSheet(id){
+  document.getElementById('overlay').classList.add('on');
+  document.getElementById(id).classList.add('on');
+}
+function closeSheets(){
+  document.getElementById('overlay').classList.remove('on');
+  document.getElementById('cartSheet').classList.remove('on');
+  document.getElementById('orderSheet').classList.remove('on');
+}
+
+document.getElementById('cartbar').onclick=function(){renderCartSheet();openSheet('cartSheet')};
+document.getElementById('overlay').onclick=closeSheets;
+Array.prototype.forEach.call(document.querySelectorAll('[data-close]'),function(b){b.onclick=closeSheets});
+
+document.getElementById('toOrder').onclick=function(){
+  document.getElementById('cartSheet').classList.remove('on');
+  document.getElementById('orderTotal').textContent=cartTotals().sum+' ₽';
+  openSheet('orderSheet');
+};
+
+var isDelivery=true;
+document.getElementById('segDelivery').onclick=function(){
+  isDelivery=true;
+  this.classList.add('on');
+  document.getElementById('segPickup').classList.remove('on');
+  document.getElementById('addrWrap').classList.add('show');
+};
+document.getElementById('segPickup').onclick=function(){
+  isDelivery=false;
+  this.classList.add('on');
+  document.getElementById('segDelivery').classList.remove('on');
+  document.getElementById('addrWrap').classList.remove('show');
+};
+
+var payMethod='Картой';
+document.getElementById('payCard').onclick=function(){
+  payMethod='Картой';
+  this.classList.add('on');
+  document.getElementById('payCash').classList.remove('on');
+};
+document.getElementById('payCash').onclick=function(){
+  payMethod='Наличными';
+  this.classList.add('on');
+  document.getElementById('payCard').classList.remove('on');
+};
+
+function waPhone(p){
+  var ph=String(p||'').replace(/\D/g,'');
+  if(ph.length===11&&ph[0]==='8')ph='7'+ph.slice(1);
+  else if(ph.length===10)ph='7'+ph;
+  return ph;
+}
+
+document.getElementById('sendOrder').onclick=function(){
+  var name=document.getElementById('fName').value.trim();
+  var phone=document.getElementById('fPhone').value.trim();
+  var addr=document.getElementById('fAddr').value.trim();
+  var comment=document.getElementById('fComment').value.trim();
+  var errEl=document.getElementById('formErr');
+  var t=cartTotals();
+
+  var missing = !name || !phone || t.cnt===0 || (isDelivery && !addr);
+  if(missing){
+    errEl.style.display='block';
+    errEl.textContent = t.cnt===0 ? 'Корзина пуста.' : 'Заполните имя, телефон' + (isDelivery?' и адрес.':'.');
+    return;
+  }
+  errEl.style.display='none';
+
+  var lines=['Новый заказ — Shafran',''];
+  Object.keys(cart).forEach(function(id){
+    var c=cart[id];
+    lines.push('• '+c.nm+' × '+c.qty+' — '+(c.qty*c.price)+' ₽');
+  });
+  lines.push('');
+  lines.push('Итого: '+t.sum+' ₽');
+  lines.push('');
+  lines.push('Получение: '+(isDelivery?'доставка':'самовывоз'));
+  lines.push('Оплата: '+payMethod);
+  lines.push('Имя: '+name);
+  lines.push('Телефон: '+phone);
+  if(isDelivery) lines.push('Адрес: '+addr);
+  if(comment) lines.push('Комментарий: '+comment);
+
+  var text=lines.join('\n');
+  window.open('https://wa.me/'+waPhone(RESTAURANT_PHONE)+'?text='+encodeURIComponent(text),'_blank');
+};
+
+renderMenu();
+</script>
+</body>
+</html>
