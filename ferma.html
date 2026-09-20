@@ -3,30 +3,31 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Пиксель-ферма 2.0</title>
+    <title>Предприятие №1</title>
     <style>
       :root {
         color-scheme: dark;
-        --bg: #0b100d;
-        --panel: #141b17;
-        --panel-2: #101713;
-        --line: #1f2c25;
-        --text: #e8efe9;
-        --text-2: #93a89c;
-        --text-3: #6d8179;
-        /* Цвет = вид. Пара проверена валидатором на контраст и дальтонизм. */
-        --herb: #199e70;
-        --pred: #d95926;
-        --food: #7bd88f;
+        --bg: #0a0d10;
+        --panel: #14181d;
+        --panel-2: #10141a;
+        --line: #232b33;
+        --text: #e9eef2;
+        --text-2: #97a5b0;
+        --text-3: #6e7d88;
+        /* Цвет = кто ты на предприятии. Пара проверена на контраст и на то,
+           что её различает человек с дальтонизмом (ΔE 9.4 по деутану). */
+        --worker: #199e70;
+        --boss: #d95926;
+        /* Задача — бумажка на полу, намеренно бесцветная: иначе её путают
+           с рабочим, а зелёного на карте и так хватает. */
+        --task: #aebdc9;
       }
 
       * { box-sizing: border-box; }
 
       body {
         margin: 0;
-        background:
-          radial-gradient(1200px 600px at 50% -10%, #15211b 0%, transparent 60%),
-          var(--bg);
+        background: radial-gradient(1200px 700px at 50% -15%, #16202a 0%, transparent 60%), var(--bg);
         color: var(--text);
         font-family: ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
         -webkit-font-smoothing: antialiased;
@@ -35,23 +36,58 @@
       .app {
         max-width: 1180px;
         margin: 0 auto;
-        padding: 28px 16px 48px;
+        padding: 20px 16px 48px;
         display: flex;
         flex-direction: column;
         gap: 18px;
       }
 
-      header h1 {
-        margin: 0;
-        font-size: 24px;
-        letter-spacing: -0.01em;
-      }
+      /* ---------- шапка с картинкой ---------- */
 
+      .hero {
+        position: relative;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        overflow: hidden;
+        min-height: 190px;
+        display: flex;
+        align-items: flex-end;
+        background: #0d1216;
+      }
+      .hero-bg {
+        position: absolute;
+        inset: 0;
+        background-position: center 42%;
+        background-size: cover;
+        opacity: 0.62;
+      }
+      .hero::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(10,13,16,0.25) 0%, rgba(10,13,16,0.72) 55%, rgba(10,13,16,0.94) 100%);
+      }
+      .hero-inner {
+        position: relative;
+        z-index: 1;
+        padding: 20px 18px;
+        display: flex;
+        gap: 16px;
+        align-items: flex-end;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        width: 100%;
+      }
+      .hero h1 {
+        margin: 0;
+        font-size: 26px;
+        letter-spacing: -0.015em;
+      }
       .subtitle {
         margin: 6px 0 0;
         color: var(--text-2);
-        font-size: 14px;
-        max-width: 60ch;
+        font-size: 13.5px;
+        max-width: 62ch;
       }
 
       .pulse {
@@ -63,15 +99,14 @@
         padding: 4px 10px 4px 8px;
         border: 1px solid var(--line);
         border-radius: 999px;
-        background: var(--panel);
+        background: rgba(16, 20, 26, 0.8);
         white-space: nowrap;
       }
       .pulse i {
         width: 7px;
         height: 7px;
         border-radius: 50%;
-        background: var(--herb);
-        box-shadow: 0 0 0 0 rgba(25, 158, 112, 0.6);
+        background: var(--worker);
         animation: beat 3s ease-out infinite;
       }
       .pulse.stale i { background: #d9a526; animation: none; }
@@ -81,20 +116,13 @@
         100% { box-shadow: 0 0 0 0 rgba(25, 158, 112, 0); }
       }
 
-      .top {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 16px;
-        align-items: flex-start;
-        justify-content: space-between;
-      }
+      /* ---------- плитки ---------- */
 
       .tiles {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
         gap: 10px;
       }
-
       .tile {
         background: var(--panel);
         border: 1px solid var(--line);
@@ -116,9 +144,12 @@
         font-variant-numeric: tabular-nums;
       }
       .tile .v small { font-size: 12px; color: var(--text-3); }
+      .tile .v.mood { font-size: 15px; line-height: 1.35; }
       .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-      .dot.herb { background: var(--herb); }
-      .dot.pred { background: var(--pred); }
+      .dot.worker { background: var(--worker); }
+      .dot.boss { background: var(--boss); border-radius: 2px; }
+
+      /* ---------- цех ---------- */
 
       .stage {
         position: relative;
@@ -127,7 +158,7 @@
         border: 1px solid var(--line);
         background: var(--panel-2);
       }
-      canvas#world { display: block; width: 100%; aspect-ratio: 1 / 1; max-height: 72vh; }
+      canvas#world { display: block; width: 100%; aspect-ratio: 1 / 1; max-height: 74vh; cursor: pointer; }
 
       .legend {
         display: flex;
@@ -139,90 +170,98 @@
       }
       .legend span { display: inline-flex; align-items: center; gap: 7px; }
       .swatch { width: 10px; height: 10px; border-radius: 50%; }
-      .swatch.sq { border-radius: 2px; width: 8px; height: 8px; }
-      .swatch.stone { background: #1b2620; border: 1px solid #2b3a33; border-radius: 3px; width: 12px; height: 9px; }
-      .swatch.zone { background: rgba(25, 158, 112, 0.28); border: 1px solid rgba(25,158,112,.5); }
+      .swatch.sq { border-radius: 2px; width: 9px; height: 9px; }
+      .swatch.machine { background: #1a222a; border: 1px solid #2e3a44; border-radius: 3px; width: 13px; height: 9px; }
+      .swatch.shop { background: rgba(25, 158, 112, 0.22); border: 1px solid rgba(25,158,112,.45); }
+
+      /* ---------- панели ---------- */
 
       .panel {
         background: var(--panel);
         border: 1px solid var(--line);
         border-radius: 16px;
-        padding: 16px 16px 8px;
+        padding: 16px 16px 12px;
       }
-      .panel h2 {
-        margin: 0;
-        font-size: 14px;
-        font-weight: 600;
-        color: var(--text);
-      }
+      .panel h2 { margin: 0; font-size: 14px; font-weight: 600; }
       .panel .hint { margin: 4px 0 10px; color: var(--text-3); font-size: 12px; }
 
-      .chart-head {
+      /* ---------- облака мыслей ---------- */
+
+      .minds {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 14px;
+      }
+      .mind-head {
         display: flex;
+        align-items: baseline;
         justify-content: space-between;
-        align-items: flex-start;
-        gap: 12px;
-        flex-wrap: wrap;
+        gap: 10px;
       }
-      .chart-legend { display: flex; gap: 14px; font-size: 12.5px; color: var(--text-2); }
-      .chart-legend span { display: inline-flex; align-items: center; gap: 7px; }
+      .mind-head .count { color: var(--text-3); font-size: 12px; font-variant-numeric: tabular-nums; }
 
-      .toggle {
-        background: transparent;
-        border: 1px solid var(--line);
-        color: var(--text-2);
-        border-radius: 8px;
-        padding: 5px 10px;
-        font-size: 12px;
-        cursor: pointer;
-      }
-      .toggle:hover { color: var(--text); border-color: #2c3d34; }
-
-      svg#chart { display: block; width: 100%; height: 240px; }
-      svg#chart .grid { stroke: #1c2822; stroke-width: 1; }
-      svg#chart .axis { fill: var(--text-3); font-size: 11px; }
-      svg#chart .line { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
-      svg#chart .end-label { font-size: 11.5px; font-weight: 600; }
-      svg#chart .crosshair { stroke: #38493f; stroke-width: 1; stroke-dasharray: 3 3; }
-
-      .tooltip {
-        position: absolute;
-        pointer-events: none;
-        background: #0c1410;
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        padding: 7px 9px;
-        font-size: 12px;
-        color: var(--text);
-        white-space: nowrap;
-        opacity: 0;
-        transition: opacity 0.12s;
-        z-index: 3;
-      }
-      .chart-wrap { position: relative; }
-
-      table.data {
-        width: 100%;
-        border-collapse: collapse;
+      .moods { margin: 10px 0 12px; display: flex; flex-direction: column; gap: 5px; }
+      .mood-row {
+        display: grid;
+        grid-template-columns: 18px minmax(86px, auto) 1fr 28px;
+        align-items: center;
+        gap: 8px;
         font-size: 12.5px;
-        font-variant-numeric: tabular-nums;
-        margin-bottom: 12px;
+        color: var(--text-2);
       }
-      table.data th, table.data td {
-        text-align: right;
-        padding: 5px 8px;
-        border-bottom: 1px solid var(--line);
-      }
-      table.data th:first-child, table.data td:first-child { text-align: left; color: var(--text-2); }
-      table.data th { color: var(--text-3); font-weight: 500; }
-      [hidden] { display: none !important; }
+      .mood-row .bar { height: 6px; border-radius: 999px; background: #1c242c; overflow: hidden; }
+      .mood-row .bar i { display: block; height: 100%; border-radius: 999px; }
+      .mood-row .n { text-align: right; color: var(--text-3); font-variant-numeric: tabular-nums; }
 
-      .tools-row {
+      .cloud {
+        position: relative;
         display: flex;
         flex-wrap: wrap;
-        gap: 18px;
-        align-items: center;
+        gap: 8px;
+        align-content: flex-start;
+        min-height: 168px;
       }
+      .bubble {
+        border-radius: 14px 14px 14px 4px;
+        padding: 8px 11px;
+        max-width: 100%;
+        border: 1px solid;
+        animation: pop 0.45s ease-out;
+        line-height: 1.32;
+      }
+      .bubble.worker { background: rgba(25, 158, 112, 0.09); border-color: rgba(25, 158, 112, 0.34); }
+      .bubble.boss { background: rgba(217, 89, 38, 0.09); border-color: rgba(217, 89, 38, 0.34); }
+      .bubble p { margin: 0; color: var(--text); }
+      .bubble .who {
+        display: block;
+        margin-top: 4px;
+        font-size: 11px;
+        color: var(--text-3);
+      }
+      .bubble.worker .who b { color: #8ff0c8; font-weight: 500; }
+      .bubble.boss .who b { color: #ffb896; font-weight: 500; }
+      @keyframes pop {
+        from { opacity: 0; transform: translateY(6px) scale(0.97); }
+        to { opacity: 1; transform: none; }
+      }
+
+      /* ---------- личное дело ---------- */
+
+      .card {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 4px 14px;
+        font-size: 13px;
+        margin: 0;
+      }
+      .card dt { color: var(--text-3); }
+      .card dd { margin: 0; }
+      .card .quote { color: var(--text); font-style: italic; }
+      .empty-card { color: var(--text-3); font-size: 13px; margin: 0; }
+
+      /* ---------- управление ---------- */
+
+      .tools-row { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; }
       .tool-group { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
       .tool-label { color: var(--text-3); font-size: 12px; margin-right: 2px; }
 
@@ -236,15 +275,15 @@
         cursor: pointer;
         transition: border-color 0.12s, color 0.12s, background 0.12s;
       }
-      .tool:hover, .danger:hover { color: var(--text); border-color: #2f4239; }
+      .tool:hover, .danger:hover { color: var(--text); border-color: #35434f; }
       .tool[aria-pressed="true"] {
-        color: #0b100d;
-        background: var(--herb);
-        border-color: var(--herb);
+        color: #0a0d10;
+        background: var(--worker);
+        border-color: var(--worker);
         font-weight: 600;
       }
       .danger { border-color: #4a2a1e; color: #e8a07e; }
-      .danger:hover { background: #2a1610; border-color: var(--pred); color: #ffc7a8; }
+      .danger:hover { background: #2a1610; border-color: var(--boss); color: #ffc7a8; }
       button:disabled { opacity: 0.5; cursor: progress; }
 
       .command-row {
@@ -267,10 +306,7 @@
         font-size: 13px;
         font-family: inherit;
       }
-      .command-row input[type="text"]:focus {
-        outline: none;
-        border-color: #3a5147;
-      }
+      .command-row input[type="text"]:focus { outline: none; border-color: #3d4d5a; }
       .command-row select {
         background: var(--panel-2);
         border: 1px solid var(--line);
@@ -281,9 +317,9 @@
         font-family: inherit;
       }
       .primary {
-        background: var(--herb);
-        border: 1px solid var(--herb);
-        color: #0b100d;
+        background: var(--worker);
+        border: 1px solid var(--worker);
+        color: #0a0d10;
         font-weight: 600;
         border-radius: 9px;
         padding: 9px 14px;
@@ -292,14 +328,7 @@
       }
       .primary:hover { filter: brightness(1.08); }
 
-      .examples {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-        margin: 10px 0 0;
-        padding: 0;
-        list-style: none;
-      }
+      .examples { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 0; padding: 0; list-style: none; }
       .examples button {
         background: transparent;
         border: 1px dashed var(--line);
@@ -310,16 +339,9 @@
         font-family: inherit;
         cursor: pointer;
       }
-      .examples button:hover { color: var(--text-2); border-color: #3a5147; }
+      .examples button:hover { color: var(--text-2); border-color: #3d4d5a; }
 
-      .orders {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin: 12px 0 0;
-        padding: 0;
-        list-style: none;
-      }
+      .orders { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 0; padding: 0; list-style: none; }
       .orders li {
         display: inline-flex;
         align-items: center;
@@ -329,17 +351,11 @@
         font-size: 12.5px;
         border: 1px solid;
       }
-      .orders li.herb { border-color: rgba(25,158,112,.5); color: #8ff0c8; background: rgba(25,158,112,.1); }
-      .orders li.pred { border-color: rgba(217,89,38,.5); color: #ffb896; background: rgba(217,89,38,.1); }
+      .orders li.worker { border-color: rgba(25,158,112,.5); color: #8ff0c8; background: rgba(25,158,112,.1); }
+      .orders li.boss { border-color: rgba(217,89,38,.5); color: #ffb896; background: rgba(217,89,38,.1); }
       .orders li button {
-        background: transparent;
-        border: none;
-        color: inherit;
-        opacity: 0.7;
-        cursor: pointer;
-        font-size: 14px;
-        line-height: 1;
-        padding: 2px 6px;
+        background: transparent; border: none; color: inherit; opacity: 0.7;
+        cursor: pointer; font-size: 14px; line-height: 1; padding: 2px 6px;
       }
       .orders li button:hover { opacity: 1; }
 
@@ -348,70 +364,94 @@
       .status.good { color: #8ff0c8; }
 
       .journal {
-        list-style: none;
-        margin: 10px 0 8px;
-        padding: 0;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px 10px;
-        font-size: 12px;
-        color: var(--text-3);
+        list-style: none; margin: 10px 0 4px; padding: 0;
+        display: flex; flex-wrap: wrap; gap: 6px 10px;
+        font-size: 12px; color: var(--text-3);
       }
-      .journal li {
-        background: var(--panel-2);
-        border: 1px solid var(--line);
-        border-radius: 999px;
-        padding: 3px 10px;
-      }
+      .journal li { background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; }
       .journal li b { color: var(--text-2); font-weight: 500; }
 
-      canvas#world { cursor: crosshair; }
+      /* ---------- график ---------- */
 
-      .error {
-        margin: 0;
-        padding: 10px 12px;
-        border-radius: 10px;
-        background: #3a1b1b;
-        color: #ffb4b4;
-        font-size: 13px;
+      .chart-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+      .chart-legend { display: flex; gap: 14px; font-size: 12.5px; color: var(--text-2); }
+      .chart-legend span { display: inline-flex; align-items: center; gap: 7px; }
+      .toggle {
+        background: transparent; border: 1px solid var(--line); color: var(--text-2);
+        border-radius: 8px; padding: 5px 10px; font-size: 12px; cursor: pointer;
       }
+      .toggle:hover { color: var(--text); border-color: #35434f; }
 
-      .foot { color: var(--text-3); font-size: 12px; }
-      .foot code { color: var(--text-2); }
+      svg#chart { display: block; width: 100%; height: 240px; }
+      svg#chart .grid { stroke: #1d252d; stroke-width: 1; }
+      svg#chart .axis { fill: var(--text-3); font-size: 11px; }
+      svg#chart .line { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+      svg#chart .end-label { font-size: 11.5px; font-weight: 600; }
+      svg#chart .crosshair { stroke: #3b4a56; stroke-width: 1; stroke-dasharray: 3 3; }
+
+      .tooltip {
+        position: absolute; pointer-events: none;
+        background: #0c1116; border: 1px solid var(--line); border-radius: 8px;
+        padding: 7px 9px; font-size: 12px; color: var(--text);
+        white-space: nowrap; opacity: 0; transition: opacity 0.12s; z-index: 3;
+      }
+      .chart-wrap { position: relative; }
+
+      table.data {
+        width: 100%; border-collapse: collapse; font-size: 12.5px;
+        font-variant-numeric: tabular-nums; margin-bottom: 12px;
+      }
+      table.data th, table.data td { text-align: right; padding: 5px 8px; border-bottom: 1px solid var(--line); }
+      table.data th:first-child, table.data td:first-child { text-align: left; color: var(--text-2); }
+      table.data th { color: var(--text-3); font-weight: 500; }
+      [hidden] { display: none !important; }
+
+      .error { margin: 0; padding: 10px 12px; border-radius: 10px; background: #3a1b1b; color: #ffb4b4; font-size: 13px; }
+      .foot { color: var(--text-3); font-size: 12px; line-height: 1.5; }
+      .foot b { color: var(--text-2); font-weight: 500; }
 
       @media (max-width: 560px) {
         .tile .v { font-size: 18px; }
-        header h1 { font-size: 20px; }
+        .hero h1 { font-size: 21px; }
+        .hero { min-height: 150px; }
       }
     </style>
   </head>
   <body>
     <div class="app">
-      <header class="top">
-        <div>
-          <h1>Пиксель-ферма 2.0</h1>
-          <p class="subtitle">
-            Мир живёт на сервере круглосуточно. Эта страница ничего не считает —
-            она только смотрит и рисует то, что уже посчитано.
-          </p>
+      <header class="hero">
+        <div class="hero-bg" id="hero-bg"></div>
+        <div class="hero-inner">
+          <div>
+            <h1>Предприятие №1</h1>
+            <p class="subtitle">
+              Смена идёт круглосуточно на сервере. Рабочие берут задачи, начальники
+              ходят по цеху и ищут, с кого спросить. У каждого есть силы, настроение
+              и мысль — нажмите на человечка, чтобы прочитать его личное дело.
+            </p>
+          </div>
+          <div class="pulse" id="pulse"><i></i><span id="pulse-text">подключаюсь…</span></div>
         </div>
-        <div class="pulse" id="pulse"><i></i><span id="pulse-text">подключаюсь…</span></div>
       </header>
 
       <p class="error" id="error" hidden></p>
 
       <div class="tiles">
         <div class="tile">
-          <div class="k"><span class="dot herb"></span>Травоядные</div>
-          <div class="v" id="herb-count">—</div>
+          <div class="k"><span class="dot worker"></span>Рабочие</div>
+          <div class="v" id="worker-count">—</div>
         </div>
         <div class="tile">
-          <div class="k"><span class="dot pred"></span>Хищники</div>
-          <div class="v" id="pred-count">—</div>
+          <div class="k"><span class="dot boss"></span>Начальники</div>
+          <div class="v" id="boss-count">—</div>
         </div>
         <div class="tile">
-          <div class="k">Еда</div>
-          <div class="v" id="food-count">—</div>
+          <div class="k">Задачи в цеху</div>
+          <div class="v" id="task-count">—</div>
+        </div>
+        <div class="tile">
+          <div class="k">Настроение цеха</div>
+          <div class="v mood" id="shop-mood">—</div>
         </div>
         <div class="tile">
           <div class="k">Поколение</div>
@@ -421,98 +461,129 @@
           <div class="k">Тик</div>
           <div class="v" id="tick">—</div>
         </div>
-        <div class="tile">
-          <div class="k">Скорость, ген</div>
-          <div class="v" id="speeds">—</div>
-        </div>
       </div>
 
       <div class="stage"><canvas id="world"></canvas></div>
 
       <div class="legend">
-        <span><i class="swatch" style="background:var(--herb)"></i>травоядное</span>
-        <span><i class="swatch" style="background:var(--pred)"></i>хищник (кольцо — вышел на охоту)</span>
-        <span><i class="swatch sq" style="background:var(--food)"></i>еда</span>
-        <span><i class="swatch stone"></i>камни и вода</span>
-        <span><i class="swatch zone"></i>плодородная зона</span>
-        <span>яркость точки — насколько агент сыт</span>
+        <span><i class="swatch" style="background:var(--worker)"></i>рабочий</span>
+        <span><i class="swatch sq" style="background:var(--boss)"></i>начальник (кольцо — ищет, с кого спросить)</span>
+        <span><i class="swatch sq" style="background:var(--task)"></i>задача</span>
+        <span><i class="swatch machine"></i>станок</span>
+        <span><i class="swatch shop"></i>цех: за станками начальник почти не видит</span>
+        <span>яркость — сколько в человеке сил</span>
+      </div>
+
+      <div class="minds">
+        <section class="panel">
+          <div class="mind-head">
+            <h2>О чём думают рабочие</h2>
+            <span class="count" id="worker-thinking">—</span>
+          </div>
+          <p class="hint">Мысль зависит от того, что с человеком происходит прямо сейчас.</p>
+          <div class="moods" id="worker-moods"></div>
+          <div class="cloud" id="worker-cloud"></div>
+        </section>
+
+        <section class="panel">
+          <div class="mind-head">
+            <h2>О чём думают начальники</h2>
+            <span class="count" id="boss-thinking">—</span>
+          </div>
+          <p class="hint">Те же правила, только другая сторона цеха.</p>
+          <div class="moods" id="boss-moods"></div>
+          <div class="cloud" id="boss-cloud"></div>
+        </section>
       </div>
 
       <section class="panel">
+        <h2>Личное дело</h2>
+        <p class="hint">Нажмите на любого человечка в цеху.</p>
+        <p class="empty-card" id="card-empty">Пока никто не выбран.</p>
+        <dl class="card" id="card" hidden></dl>
+      </section>
+
+      <section class="panel">
         <div class="tools-row">
-          <div class="tool-group" role="group" aria-label="Что делает клик по карте">
-            <span class="tool-label">Клик по карте:</span>
-            <button class="tool" type="button" data-tool="feed" aria-pressed="true">Подкормить</button>
-            <button class="tool" type="button" data-tool="herbivore" aria-pressed="false">+ травоядное</button>
-            <button class="tool" type="button" data-tool="predator" aria-pressed="false">+ хищник</button>
-            <button class="tool" type="button" data-tool="obstacle" aria-pressed="false">Камень</button>
+          <div class="tool-group" role="group" aria-label="Что делает нажатие на цех">
+            <span class="tool-label">Нажатие на цех:</span>
+            <button class="tool" type="button" data-tool="look" aria-pressed="true">Кто это?</button>
+            <button class="tool" type="button" data-tool="feed" aria-pressed="false">Подкинуть задач</button>
+            <button class="tool" type="button" data-tool="herbivore" aria-pressed="false">Нанять рабочего</button>
+            <button class="tool" type="button" data-tool="predator" aria-pressed="false">Поставить начальника</button>
+            <button class="tool" type="button" data-tool="obstacle" aria-pressed="false">Станок</button>
           </div>
           <div class="tool-group">
-            <span class="tool-label">Катаклизм:</span>
-            <button class="danger" type="button" id="drought">Засуха</button>
-            <button class="danger" type="button" id="plague">Мор</button>
+            <span class="tool-label">Беда:</span>
+            <button class="danger" type="button" id="drought">Срыв поставок</button>
+            <button class="danger" type="button" id="plague">Сокращение</button>
           </div>
         </div>
+
         <div class="command-row">
-          <select id="species" aria-label="Кому отдать приказ">
-            <option value="herbivore">Травоядным</option>
-            <option value="predator">Хищникам</option>
+          <select id="species" aria-label="Кому отдать распоряжение">
+            <option value="herbivore">Рабочим</option>
+            <option value="predator">Начальникам</option>
           </select>
           <input
             type="text"
             id="command"
             maxlength="200"
-            placeholder="Например: соберитесь вокруг одного хищника и убейте"
-            aria-label="Команда виду"
+            placeholder="Например: обступите одного начальника и выживите его"
+            aria-label="Распоряжение"
           />
-          <button class="primary" type="button" id="send">Отдать приказ</button>
+          <button class="primary" type="button" id="send">Сказать</button>
         </div>
 
         <ul class="examples" id="examples">
-          <li><button type="button" data-species="herbivore">соберитесь вокруг одного хищника и убейте</button></li>
-          <li><button type="button" data-species="herbivore">разбегайтесь врассыпную</button></li>
-          <li><button type="button" data-species="herbivore">соберитесь в центре карты</button></li>
-          <li><button type="button" data-species="predator">охотьтесь без передышки</button></li>
-          <li><button type="button" data-species="herbivore">отбой, живите как обычно</button></li>
+          <li><button type="button" data-species="herbivore">бастуйте: обступите одного начальника и выживите его</button></li>
+          <li><button type="button" data-species="herbivore">прячьтесь за станки</button></li>
+          <li><button type="button" data-species="herbivore">все на планёрку в центр цеха</button></li>
+          <li><button type="button" data-species="herbivore">перекур</button></li>
+          <li><button type="button" data-species="predator">тотальный контроль, проверяйте всех</button></li>
+          <li><button type="button" data-species="herbivore">отбой, работаем как обычно</button></li>
         </ul>
 
         <ul class="orders" id="orders"></ul>
-        <p class="status" id="status">Выберите инструмент и кликните по карте — или отдайте приказ словами.</p>
+        <p class="status" id="status">Выберите, что делает нажатие на цех, — или скажите людям что-нибудь словами.</p>
         <ul class="journal" id="journal"></ul>
       </section>
 
       <section class="panel">
         <div class="chart-head">
           <div>
-            <h2>Популяции во времени</h2>
-            <p class="hint">Снимок численности каждые 20 тиков — примерно раз в минуту.</p>
+            <h2>Рабочие и начальники во времени</h2>
+            <p class="hint">Снимок штата каждые 20 тиков — примерно раз в минуту.</p>
           </div>
           <div style="display:flex; gap:12px; align-items:center">
             <div class="chart-legend">
-              <span><i class="swatch" style="background:var(--herb)"></i>травоядные</span>
-              <span><i class="swatch" style="background:var(--pred)"></i>хищники</span>
+              <span><i class="swatch" style="background:var(--worker)"></i>рабочие</span>
+              <span><i class="swatch sq" style="background:var(--boss)"></i>начальники</span>
             </div>
             <button class="toggle" id="table-toggle" type="button">Таблица</button>
           </div>
         </div>
 
         <div class="chart-wrap">
-          <svg id="chart" role="img" aria-label="График численности травоядных и хищников по времени"></svg>
+          <svg id="chart" role="img" aria-label="График численности рабочих и начальников по времени"></svg>
           <div class="tooltip" id="tooltip"></div>
         </div>
 
         <table class="data" id="table" hidden>
           <thead>
-            <tr><th>Время</th><th>Травоядные</th><th>Хищники</th><th>Еда</th></tr>
+            <tr><th>Время</th><th>Рабочие</th><th>Начальники</th><th>Задачи</th></tr>
           </thead>
           <tbody></tbody>
         </table>
       </section>
 
       <p class="foot">
-        Классика «хищник-жертва»: хищников становится больше — травоядные убывают —
-        хищникам нечего есть — они убывают — стадо восстанавливается. Линии на графике
-        должны колебаться, а не замирать.
+        <b>Как здесь всё устроено.</b> Рабочий живёт, пока берёт задачи: каждая даёт ему силы.
+        Начальник сам задач не берёт — он кормится с рабочих: догнал, спросил, забрал выработку,
+        и человека на предприятии больше нет. Чем больше начальников в одном месте, тем дороже
+        каждому из них: они мешают друг другу и делят одну премию. Сытый начальник уходит
+        к себе и никого не трогает. За станками в цеху рабочего почти не видно — поэтому
+        цех и не пустеет. Линии на графике должны колебаться, а не замирать: это и есть жизнь.
       </p>
     </div>
 
@@ -521,6 +592,11 @@
       диска и работать на телефоне. Раньше здесь подключался supabase-js с CDN,
       и если он не загружался, скрипт падал на первой строке, а страница молча
       застывала на «подключаюсь…». Теперь это обычные запросы через fetch.
+
+      Мысли и настроения считает браузер, а не сервер: они полностью выводятся
+      из того, что и так видно (силы, кто рядом, есть ли задача, какой приказ).
+      Это честно — человечек думает о том, что с ним происходит, — и не стоит
+      ни одного лишнего запроса к базе.
     -->
     <script>
       // Анонимный ключ публичен по назначению: RLS разрешает только чтение мира.
@@ -528,26 +604,30 @@
       const SUPABASE_ANON_KEY =
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZkeXd2YmlveXVuaGhodnVqb3d2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk4NDUwMzQsImV4cCI6MjEwNTQyMTAzNH0.CVX4_RotQnSJDXFwak_5I6_sPY-07y7l1TpkTAUTKEQ";
 
-      const GROUND_TEXTURE =
-        "https://d8j0ntlcm91z4.cloudfront.net/user_38hVkwfIcxKuFfa4iWUIfoCmgDn/hf_20260919_214320_be8c1ac5-79b3-4626-9df2-d07bda938b57.png";
+      // Картинки нарисованы в Higgsfield. Если CDN не ответит, страница
+      // просто останется тёмной — ни одна из них не обязательна.
+      const HERO_IMAGE =
+        "https://d8j0ntlcm91z4.cloudfront.net/user_38hVkwfIcxKuFfa4iWUIfoCmgDn/hf_20260920_181009_34ff1f3d-47fb-42b5-acdc-29b4b0139e7b.png";
+      const FLOOR_TEXTURE =
+        "https://d8j0ntlcm91z4.cloudfront.net/user_38hVkwfIcxKuFfa4iWUIfoCmgDn/hf_20260920_181124_725b9c98-a958-4dd4-b71a-7c144eed3136.png";
 
       const FALLBACK_POLL_MS = 3000;
       const TWEEN_MS = 2600;
       const HISTORY_POINTS = 180;
-      const SATIATED_AT = 150; // как в simulation.ts: выше — хищник сыт и не охотится
+      const SATIATED_AT = 150; // как в simulation.ts: выше — начальник сыт
+      const MAX_ENERGY = { worker: 160, boss: 260 };
 
       const COLORS = {
-        herb: "#199e70",
-        pred: "#d95926",
-        food: "#7bd88f",
-        stone: "#1b2620",
+        worker: "#199e70",
+        boss: "#d95926",
+        task: "#aebdc9",
+        machine: "#1a222a",
       };
 
       const REQUEST_TIMEOUT_MS = 12000;
 
-      // Минимальный клиент вместо библиотеки: нужны только чтение таблиц,
-      // вызов функций и вызов Edge Function. Запрос всегда с таймаутом —
-      // иначе на плохой связи страница висит без объяснений.
+      /* ---------- минимальный клиент вместо библиотеки ---------- */
+
       async function request(path, options = {}) {
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
@@ -565,10 +645,7 @@
 
           const text = await response.text();
           const body = text ? JSON.parse(text) : null;
-
           if (!response.ok) {
-            // PostgREST кладёт человеческое сообщение в message — в наших
-            // функциях оно уже по-русски.
             throw new Error((body && (body.message || body.error)) || "HTTP " + response.status);
           }
           return body;
@@ -582,10 +659,8 @@
       }
 
       const select = (table, query = "") => request("/rest/v1/" + table + (query ? "?" + query : ""));
-
       const rpc = (fn, args) =>
         request("/rest/v1/rpc/" + fn, { method: "POST", body: JSON.stringify(args ?? {}) });
-
       const invoke = (fn, body) =>
         request("/functions/v1/" + fn, { method: "POST", body: JSON.stringify(body ?? {}) });
 
@@ -593,34 +668,485 @@
       const canvas = el("world");
       const ctx = canvas.getContext("2d");
 
+      // В базе виды по-прежнему называются herbivore/predator — мир живёт
+      // без остановки с первого дня, и переименовывать строки на ходу значило
+      // бы ронять смену. Наружу всюду рабочие и начальники.
+      const isBoss = (type) => type === "predator" || type === "boss";
+      const roleOf = (type) => (isBoss(type) ? "boss" : "worker");
+
       let world = { width: 100, height: 100, tick_count: null, last_tick_at: null };
-      let food = [];
-      let obstacles = [];
+      let tasks = [];
+      let machines = [];
       let zones = [];
       let history = [];
       let tracked = new Map();
-      let flashes = []; // вспышки рождений и смертей
+      let flashes = [];
       let tweenStart = performance.now();
       let inFlight = false;
       let firstFrame = true;
       let lastTransform = null;
-      let tool = "feed";
+      let tool = "look";
+      let selectedId = null;
 
-      // Текстура земли необязательна: не загрузилась — просто останется фон.
-      const ground = new Image();
-      ground.crossOrigin = "anonymous";
-      let groundPattern = null;
-      ground.onload = () => {
-        groundPattern = ctx.createPattern(ground, "repeat");
+      el("hero-bg").style.backgroundImage = "url('" + HERO_IMAGE + "')";
+
+      const floor = new Image();
+      floor.crossOrigin = "anonymous";
+      let floorPattern = null;
+      floor.onload = () => {
+        floorPattern = ctx.createPattern(floor, "repeat");
       };
-      ground.src = GROUND_TEXTURE;
+      floor.src = FLOOR_TEXTURE;
 
       const avg = (xs) => (xs.length ? xs.reduce((s, v) => s + v, 0) / xs.length : 0);
+
+      // Одно и то же id всегда даёт одно и то же число: имя человека не должно
+      // меняться от того, что страницу обновили.
+      function hash(str) {
+        let h = 2166136261;
+        for (let i = 0; i < str.length; i++) {
+          h ^= str.charCodeAt(i);
+          h = Math.imul(h, 16777619);
+        }
+        return h >>> 0;
+      }
+      const pick = (list, seed) => list[seed % list.length];
+
+      /* ================= мысли, настроения, имена ================= */
+
+      // Мужские и женские имена лежат отдельно вместе со своими фамилиями:
+      // «Инна Сухов» сразу выдаёт, что имя собрано машиной, и живым человек
+      // после этого быть перестаёт.
+      const NAMES = {
+        worker: [
+          {
+            first: ["Игорь", "Витя", "Серёжа", "Гена", "Костя", "Паша", "Толя", "Миша",
+                    "Юра", "Боря", "Лёня", "Слава", "Рома", "Дима", "Валера", "Саня"],
+            last: ["Сомов", "Пряхин", "Гусев", "Лапин", "Бубнов", "Чайкин", "Дроздов",
+                   "Зуев", "Лужин", "Ёлкин", "Мухин", "Рябов", "Сухов", "Пименов", "Ким", "Куц"],
+          },
+          {
+            first: ["Люда", "Тамара", "Оля", "Нина", "Рая", "Зоя", "Вера", "Галя",
+                    "Света", "Марина", "Катя", "Даша", "Алла", "Инна", "Валя", "Тоня"],
+            last: ["Сомова", "Пряхина", "Гусева", "Лапина", "Бубнова", "Чайкина", "Дроздова",
+                   "Зуева", "Лужина", "Ёлкина", "Мухина", "Рябова", "Сухова", "Пименова", "Ким", "Куц"],
+          },
+        ],
+        // Начальника зовут по имени-отчеству. Имя и отчество берутся
+        // независимо: шести готовых пар на два десятка начальников не хватает,
+        // и цех начинает выглядеть как склад однофамильцев.
+        boss: [
+          {
+            first: ["Виктор", "Аркадий", "Эдуард", "Геннадий", "Валерий", "Анатолий",
+                    "Леонид", "Станислав"],
+            last: ["Палыч", "Львович", "Сергеич", "Борисыч", "Иваныч", "Степаныч",
+                   "Юрьевич", "Михалыч"],
+          },
+          {
+            first: ["Нина", "Тамара", "Роза", "Алла", "Лариса", "Зинаида", "Галина", "Вера"],
+            last: ["Петровна", "Ильинична", "Марковна", "Викторовна", "Егоровна",
+                   "Павловна", "Аркадьевна", "Тимофеевна"],
+          },
+        ],
+      };
+
+      function nameOf(id, role) {
+        const h = hash(id);
+        const set = NAMES[role][h % 2];
+        const first = pick(set.first, h >>> 3);
+        const last = pick(set.last, h >>> 11);
+        return last ? first + " " + last : first;
+      }
+
+      // Настроение — не случайность, а прямой вывод из положения дел.
+      // Порядок важен: первое подходящее правило и выигрывает.
+      const MOODS = {
+        worker: {
+          fear:      { label: "страх",       icon: "😨", color: "#d95926" },
+          rage:      { label: "ярость",      icon: "😤", color: "#e0752c" },
+          alarm:     { label: "тревога",     icon: "😟", color: "#d9a526" },
+          burnout:   { label: "изнеможение", icon: "🫠", color: "#b06a3b" },
+          calm:      { label: "покой",       icon: "😌", color: "#4fa5c4" },
+          focus:     { label: "сосредоточен",icon: "🙂", color: "#199e70" },
+          content:   { label: "доволен",     icon: "😊", color: "#3fbf88" },
+          boredom:   { label: "скука",       icon: "😐", color: "#6e7d88" },
+          tired:     { label: "усталость",   icon: "😮‍💨", color: "#8a9aa6" },
+        },
+        boss: {
+          wrath:     { label: "гнев",         icon: "😠", color: "#d95926" },
+          smug:      { label: "самодовольство", icon: "😎", color: "#e0a02c" },
+          panic:     { label: "паника",       icon: "😰", color: "#c4553f" },
+          envy:      { label: "зависть",      icon: "🙄", color: "#a76fbf" },
+          chase:     { label: "азарт погони", icon: "🧐", color: "#e07a3c" },
+          annoyance: { label: "раздражение",  icon: "😒", color: "#9a7b5a" },
+          routine:   { label: "рутина",       icon: "🫥", color: "#7d8b96" },
+        },
+      };
+
+      const THOUGHTS = {
+        fear: [
+          "Только не ко мне. Только не ко мне.",
+          "Иду мимо. Я очень занят, вы же видите.",
+          "За станком он меня не разглядит.",
+          "Почему он всегда подходит именно ко мне?",
+          "Сделаю вид, что уже всё сдал.",
+          "Не поднимать голову. Не поднимать голову.",
+        ],
+        rage: [
+          "Хватит. Сегодня — хватит.",
+          "Нас много, он один.",
+          "Мне уже нечего терять.",
+          "Пусть теперь он побегает.",
+          "Я всё это помню. Всё до мелочи.",
+          "Если не сейчас, то никогда.",
+        ],
+        alarm: [
+          "Куда все побежали? Я тоже побегу.",
+          "Главное — оказаться подальше.",
+          "Что-то случилось, а мне опять не сказали.",
+          "Пережду вон там, в углу.",
+        ],
+        burnout: [
+          "Ещё немного — и я просто лягу здесь.",
+          "Сил нет даже думать.",
+          "Мне бы до конца смены дожить.",
+          "Я уже не работаю. Я догораю.",
+          "Когда я в последний раз ел?",
+        ],
+        calm: [
+          "Пять минут. Всего пять минут.",
+          "Стою и никому ничего не должен.",
+          "Тишина. Даже странно.",
+          "Вот так бы и всю смену.",
+        ],
+        focus: [
+          "Вот эту доделаю — и хорошо.",
+          "Успею до перерыва.",
+          "Руки сами помнят.",
+          "Неплохо получается, между прочим.",
+        ],
+        content: [
+          "Сегодня я молодец.",
+          "Даже спина не болит.",
+          "Может, всё не так уж плохо.",
+          "Ещё чуть-чуть — и премия.",
+        ],
+        boredom: [
+          "И это всё? И так двадцать лет?",
+          "Хожу кругами с деловым лицом.",
+          "Интересно, меня вообще кто-нибудь ищет?",
+          "Считаю лампы на потолке. Их сорок две.",
+        ],
+        tired: [
+          "Ещё две задачи — и перерыв.",
+          "Понедельник. Опять.",
+          "Голова гудит.",
+          "Надо бы поесть.",
+          "Скорее бы домой.",
+        ],
+        wrath: [
+          "Все на местах? Сейчас проверю каждого.",
+          "Кто это придумал — работать медленно?",
+          "Мне нужен результат, а не объяснения.",
+          "Сейчас найду виноватого.",
+        ],
+        smug: [
+          "План закрыт. Я умею.",
+          "Пусть теперь сами разбираются.",
+          "Вот что значит твёрдая рука.",
+          "Кабинет, чай, тишина.",
+        ],
+        panic: [
+          "Если завтра не закроем — спросят с меня.",
+          "Почему их так мало?!",
+          "Мне самому скоро есть будет нечего.",
+          "Наверху, кажется, уже всё знают.",
+        ],
+        envy: [
+          "Почему у него участок больше?",
+          "Опять его хвалят. За что?",
+          "Нас тут слишком много начальников.",
+          "Делим одну премию на всех. Смешно.",
+        ],
+        chase: [
+          "Вот этот подойдёт.",
+          "Далеко не уйдёт.",
+          "Стоп. Кто разрешил перерыв?",
+          "Вижу, что ты меня видишь.",
+        ],
+        annoyance: [
+          "Где все?!",
+          "Цех пустой, а план горит.",
+          "Никого. Как будто я тут лишний.",
+        ],
+        routine: [
+          "Обход. Как всегда.",
+          "Пройдусь, посмотрю, покиваю.",
+          "Совещание в три.",
+          "Надо бы что-нибудь возглавить.",
+        ],
+      };
+
+      const DESIRES = {
+        fear: "лишь бы не заметили",
+        rage: "чтобы этот начальник ушёл с предприятия",
+        alarm: "оказаться подальше отсюда",
+        burnout: "дожить до перерыва",
+        calm: "чтобы эти пять минут не кончались",
+        focus: "закрыть задачу",
+        content: "премию и выходной",
+        boredom: "чтобы хоть что-нибудь случилось",
+        tired: "доесть и присесть",
+        wrath: "чтобы все работали",
+        smug: "чтобы так было и дальше",
+        panic: "закрыть план любой ценой",
+        envy: "чтобы хвалили его, а не соседа",
+        chase: "спросить вот с этого",
+        annoyance: "найти хоть кого-нибудь",
+        routine: "дотянуть до совещания",
+      };
+
+      const dist = (ax, ay, bx, by) => Math.hypot(ax - bx, ay - by);
+
+      function inShop(x, y) {
+        for (const z of zones) {
+          if ((x - z.x) ** 2 + (y - z.y) ** 2 <= z.radius ** 2) return true;
+        }
+        return false;
+      }
+
+      function workerMood(a, ctxInfo) {
+        if (ctxInfo.order === "mob") return "rage";
+        if (ctxInfo.order === "rest") return "calm";
+        if (ctxInfo.order === "flee") return "alarm";
+        if (ctxInfo.bossDist < 9) return "fear";
+        if (a.energy < 32) return "burnout";
+        if (a.energy > 118) return "content";
+        if (ctxInfo.taskDist < 7) return "focus";
+        if (ctxInfo.taskDist > 20 && ctxInfo.bossDist > 25) return "boredom";
+        return "tired";
+      }
+
+      function bossMood(a, ctxInfo) {
+        if (ctxInfo.order === "hunt") return "wrath";
+        if (a.energy < 70) return "panic";
+        if (ctxInfo.peers >= 3) return "envy";
+        if (a.energy >= SATIATED_AT) return "smug";
+        if (ctxInfo.workerDist < 11) return "chase";
+        if (ctxInfo.workerDist > 26) return "annoyance";
+        return "routine";
+      }
+
+      // id → {name, role, mood, thought, until}
+      const minds = new Map();
+      let moodCount = { worker: {}, boss: {} };
+      let orderByRole = { worker: null, boss: null };
+
+      function think() {
+        const now = performance.now();
+        const people = [...tracked.entries()].map(([id, a]) => ({ id, ...a }));
+        const workers = people.filter((p) => !isBoss(p.type));
+        const bosses = people.filter((p) => isBoss(p.type));
+        const counts = { worker: {}, boss: {} };
+
+        for (const p of people) {
+          const role = roleOf(p.type);
+          const info = { order: orderByRole[role] };
+
+          if (role === "worker") {
+            info.bossDist = Infinity;
+            for (const b of bosses) {
+              const d = dist(p.toX, p.toY, b.toX, b.toY);
+              if (d < info.bossDist) info.bossDist = d;
+            }
+            // За станками в цеху начальника замечают позже — и боятся меньше.
+            if (inShop(p.toX, p.toY)) info.bossDist *= 1.6;
+            info.taskDist = Infinity;
+            for (const t of tasks) {
+              const d = dist(p.toX, p.toY, t.x, t.y);
+              if (d < info.taskDist) info.taskDist = d;
+            }
+          } else {
+            info.peers = 0;
+            for (const b of bosses) {
+              if (b.id !== p.id && dist(p.toX, p.toY, b.toX, b.toY) <= 12) info.peers++;
+            }
+            info.workerDist = Infinity;
+            for (const w of workers) {
+              const d = dist(p.toX, p.toY, w.toX, w.toY);
+              if (d < info.workerDist) info.workerDist = d;
+            }
+          }
+
+          const mood = role === "worker" ? workerMood(p, info) : bossMood(p, info);
+          counts[role][mood] = (counts[role][mood] ?? 0) + 1;
+
+          let mind = minds.get(p.id);
+          if (!mind) {
+            mind = { name: nameOf(p.id, role), role, mood: null, thought: "", until: 0, slot: 0 };
+            minds.set(p.id, mind);
+          }
+          // Новая мысль — когда сменилось настроение или старая «доиграла».
+          // Иначе мысли мелькали бы каждый кадр и читать их было бы нельзя.
+          if (mind.mood !== mood || now > mind.until) {
+            mind.slot++;
+            mind.mood = mood;
+            mind.thought = pick(THOUGHTS[mood], hash(p.id + ":" + mind.slot));
+            mind.until = now + 5200 + (hash(p.id + "t" + mind.slot) % 4200);
+          }
+        }
+
+        // Ушедшие с предприятия память о себе не оставляют.
+        for (const id of minds.keys()) if (!tracked.has(id)) minds.delete(id);
+
+        moodCount = counts;
+        renderMoodRows("worker", workers.length);
+        renderMoodRows("boss", bosses.length);
+        renderShopMood();
+        if (selectedId) renderCard();
+      }
+
+      function topMoods(role, limit) {
+        return Object.entries(moodCount[role] ?? {})
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, limit);
+      }
+
+      function renderMoodRows(role, total) {
+        const box = el(role + "-moods");
+        box.textContent = "";
+        el(role + "-thinking").textContent = total ? total + " чел." : "никого";
+        for (const [mood, n] of topMoods(role, 4)) {
+          const m = MOODS[role][mood];
+          const row = document.createElement("div");
+          row.className = "mood-row";
+          row.innerHTML =
+            "<span>" + m.icon + "</span><span>" + m.label + "</span>" +
+            '<span class="bar"><i style="width:' + Math.round((n / Math.max(total, 1)) * 100) +
+            "%;background:" + m.color + '"></i></span>' +
+            '<span class="n">' + n + "</span>";
+          box.appendChild(row);
+        }
+      }
+
+      function renderShopMood() {
+        const top = topMoods("worker", 1)[0];
+        if (!top) {
+          el("shop-mood").textContent = "—";
+          return;
+        }
+        const m = MOODS.worker[top[0]];
+        el("shop-mood").innerHTML = m.icon + " " + m.label + " <small>· " + top[1] + "</small>";
+      }
+
+      /* ---------- облака мыслей ---------- */
+
+      // Показываем не всех сразу — иначе это стена текста. Берём несколько
+      // человек с разными настроениями и обновляем состав раз в несколько секунд.
+      function renderCloud(role) {
+        const box = el(role + "-cloud");
+        const people = [...minds.entries()].filter(([, m]) => m.role === role);
+        if (people.length === 0) {
+          box.innerHTML = '<p class="empty-card">Никого не осталось.</p>';
+          return;
+        }
+
+        const byMood = new Map();
+        for (const [id, m] of people) {
+          if (!byMood.has(m.mood)) byMood.set(m.mood, []);
+          byMood.get(m.mood).push([id, m]);
+        }
+
+        // Сначала по одному представителю от каждого настроения — так облако
+        // показывает разброс в цеху, а не шесть одинаковых реплик. Но если
+        // настроение в цеху одно на всех (а при общем приказе так и бывает),
+        // добираем разных людей из него же: единодушие — это тоже картина,
+        // и показывать его одним пузырём было бы похоже на поломку.
+        const moods = [...byMood.keys()].sort(
+          (a, b) => byMood.get(b).length - byMood.get(a).length,
+        );
+        const chosen = [];
+        const usedIds = new Set();
+        const usedThoughts = new Set();
+        const spin = Math.floor(Date.now() / 4000);
+
+        const take = (mood, round, uniqueThought) => {
+          const list = byMood.get(mood);
+          for (let k = 0; k < list.length; k++) {
+            const [id, mind] = list[(spin + round * 7 + k) % list.length];
+            if (usedIds.has(id)) continue;
+            if (uniqueThought && usedThoughts.has(mind.thought)) continue;
+            usedIds.add(id);
+            usedThoughts.add(mind.thought);
+            chosen.push([id, mind, mood, list.length]);
+            return true;
+          }
+          return false;
+        };
+
+        for (let round = 0; round < 6 && chosen.length < 6; round++) {
+          let progress = false;
+          for (const mood of moods) {
+            if (chosen.length >= 6) break;
+            if (take(mood, round, true) || take(mood, round, false)) progress = true;
+          }
+          if (!progress) break;
+        }
+
+        box.textContent = "";
+        for (const [id, mind, mood, share] of chosen) {
+          const m = MOODS[role][mood];
+          const div = document.createElement("div");
+          div.className = "bubble " + role;
+          div.style.fontSize = (13 + Math.min(share / Math.max(people.length, 1), 0.5) * 6).toFixed(1) + "px";
+          div.innerHTML =
+            "<p>«" + mind.thought + "»</p>" +
+            '<span class="who"><b>' + mind.name + "</b> · " + m.icon + " " + m.label +
+            (share > 1 ? " · так думают " + share : "") + "</span>";
+          div.addEventListener("click", () => {
+            selectedId = id;
+            renderCard();
+            document.querySelector(".stage").scrollIntoView({ behavior: "smooth", block: "center" });
+          });
+          box.appendChild(div);
+        }
+      }
+
+      function renderCard() {
+        const card = el("card");
+        const mind = selectedId ? minds.get(selectedId) : null;
+        const a = selectedId ? tracked.get(selectedId) : null;
+        if (!mind || !a) {
+          card.hidden = true;
+          el("card-empty").hidden = false;
+          el("card-empty").textContent = selectedId
+            ? "Этого человека на предприятии больше нет."
+            : "Пока никто не выбран.";
+          if (!a) selectedId = null;
+          return;
+        }
+
+        const role = mind.role;
+        const m = MOODS[role][mind.mood];
+        const power = Math.round((a.energy / MAX_ENERGY[role]) * 100);
+        card.hidden = false;
+        el("card-empty").hidden = true;
+        card.innerHTML =
+          "<dt>Кто</dt><dd><b>" + mind.name + "</b> · " +
+          (role === "worker" ? "рабочий" : "начальник") + "</dd>" +
+          "<dt>Силы</dt><dd>" + power + "%</dd>" +
+          "<dt>Поколение</dt><dd>" + (a.gen ?? 0) + "</dd>" +
+          "<dt>Настроение</dt><dd>" + m.icon + " " + m.label + "</dd>" +
+          '<dt>Мысль</dt><dd class="quote">«' + mind.thought + "»</dd>" +
+          "<dt>Хочет</dt><dd>" + DESIRES[mind.mood] + "</dd>";
+      }
+
+      /* ================= данные мира ================= */
 
       function showError(message) {
         const node = el("error");
         node.hidden = !message;
-        node.textContent = message ? "Не удалось прочитать мир: " + message : "";
+        node.textContent = message ? "Не удалось прочитать смену: " + message : "";
       }
 
       function setPulse(iso) {
@@ -635,8 +1161,8 @@
         const stale = sec > 20;
         node.classList.toggle("stale", stale);
         text.textContent = stale
-          ? "мир молчит " + (sec < 60 ? sec + " с" : Math.round(sec / 60) + " мин")
-          : "мир живёт · тик " + sec + " с назад";
+          ? "смена замерла " + (sec < 60 ? sec + " с" : Math.round(sec / 60) + " мин")
+          : "смена идёт · тик " + sec + " с назад";
       }
 
       function applyAgents(agents) {
@@ -648,7 +1174,7 @@
           const prev = tracked.get(a.id);
           const fromX = prev ? prev.fromX + (prev.toX - prev.fromX) * progress : a.x;
           const fromY = prev ? prev.fromY + (prev.toY - prev.fromY) * progress : a.y;
-          if (!prev && !firstFrame) flashes.push({ x: a.x, y: a.y, born: now, kind: "birth" });
+          if (!prev && !firstFrame) flashes.push({ x: a.x, y: a.y, born: now, kind: "hire" });
           next.set(a.id, {
             fromX,
             fromY,
@@ -656,16 +1182,21 @@
             toY: a.y,
             energy: a.energy,
             type: a.type,
-            // Направление движения — чтобы агент не выглядел статичной точкой.
+            gen: a.generation,
+            speed: a.speed,
             angle: Math.atan2(a.y - fromY, a.x - fromX),
           });
         }
 
-        // Исчезнувшие агенты — вспышка на последнем месте.
         if (!firstFrame) {
           for (const [id, prev] of tracked) {
             if (!next.has(id)) {
-              flashes.push({ x: prev.toX, y: prev.toY, born: now, kind: prev.type === "predator" ? "death" : "eaten" });
+              flashes.push({
+                x: prev.toX,
+                y: prev.toY,
+                born: now,
+                kind: isBoss(prev.type) ? "boss-left" : "fired",
+              });
             }
           }
         }
@@ -674,33 +1205,29 @@
         tweenStart = now;
         firstFrame = false;
 
-        const herb = agents.filter((a) => a.type !== "predator");
-        const pred = agents.filter((a) => a.type === "predator");
-        el("herb-count").textContent = herb.length;
-        el("pred-count").textContent = pred.length;
+        const workers = agents.filter((a) => !isBoss(a.type));
+        const bosses = agents.filter((a) => isBoss(a.type));
+        el("worker-count").textContent = workers.length;
+        el("boss-count").textContent = bosses.length;
         el("generation").textContent = agents.reduce((m, a) => Math.max(m, a.generation), 0);
-        el("speeds").innerHTML =
-          avg(herb.map((a) => a.speed)).toFixed(2) +
-          " <small>/</small> " +
-          avg(pred.map((a) => a.speed)).toFixed(2);
       }
 
       async function refresh() {
         if (inFlight) return;
         inFlight = true;
         try {
-          const [worldRows, agents, foodRows] = await Promise.all([
+          const [worldRows, agents, taskRows] = await Promise.all([
             select("world_state", "select=*&id=eq.1"),
             select("agents", "select=id,type,x,y,energy,speed,generation"),
             select("food", "select=id,x,y"),
           ]);
 
           if (worldRows && worldRows[0]) world = worldRows[0];
-          food = foodRows ?? [];
+          tasks = taskRows ?? [];
           applyAgents(agents ?? []);
 
           el("tick").textContent = world.tick_count ?? "—";
-          el("food-count").textContent = food.length;
+          el("task-count").textContent = tasks.length;
           setPulse(world.last_tick_at);
           showError(null);
         } catch (e) {
@@ -712,11 +1239,11 @@
       }
 
       async function loadMap() {
-        const [obstacleRows, zoneRows] = await Promise.all([
+        const [machineRows, zoneRows] = await Promise.all([
           select("obstacles", "select=*"),
           select("food_zones", "select=*"),
         ]);
-        obstacles = obstacleRows ?? [];
+        machines = machineRows ?? [];
         zones = zoneRows ?? [];
       }
 
@@ -731,7 +1258,95 @@
         drawTable();
       }
 
-      /* ---------- карта ---------- */
+      /* ================= рисование цеха ================= */
+
+      // Кому сейчас пририсована мысль прямо в цеху. Меняем состав редко:
+      // мысль должно быть видно достаточно долго, чтобы её успели прочитать.
+      let spotlight = [];
+      let spotlightAt = 0;
+
+      function pickSpotlight(narrow) {
+        const people = [...tracked.keys()];
+        if (people.length === 0) {
+          spotlight = [];
+          return;
+        }
+        // Предпочитаем тех, у кого сейчас сильное чувство: страх, ярость, паника.
+        const loud = ["fear", "rage", "panic", "chase", "burnout", "envy", "content"];
+        const scored = people
+          .map((id) => ({ id, mind: minds.get(id) }))
+          .filter((p) => p.mind)
+          .sort((a, b) => loud.indexOf(b.mind.mood) - loud.indexOf(a.mind.mood));
+        // Две одинаковые реплики рядом выглядят как ошибка отрисовки,
+        // хотя это просто двое с одинаковым настроением.
+        const uniq = (list, limit) => {
+          const seen = new Set();
+          const out = [];
+          for (const p of list) {
+            if (seen.has(p.mind.thought)) continue;
+            seen.add(p.mind.thought);
+            out.push(p);
+            if (out.length >= limit) break;
+          }
+          return out;
+        };
+        // На телефоне карта меньше ладони: пять облачков закрыли бы весь цех.
+        const workers = uniq(scored.filter((p) => p.mind.role === "worker"), narrow ? 1 : 3);
+        const bosses = uniq(scored.filter((p) => p.mind.role === "boss"), narrow ? 1 : 2);
+        spotlight = [...workers, ...bosses].map((p) => p.id);
+      }
+
+      // placed — прямоугольники уже нарисованных облачков: наезжающие друг
+      // на друга реплики нечитаемы, поэтому лишнее лучше не рисовать вовсе.
+      function drawBubble(x, y, text, role, dpr, scale, placed) {
+        const size = Math.max(11 * dpr, Math.min(15 * dpr, scale * 1.15));
+        ctx.font = size + "px ui-sans-serif, system-ui, sans-serif";
+        const padding = size * 0.55;
+
+        // Длинную мысль обрезаем, а не сжимаем: сжатый fillText'ом текст
+        // выглядит как брак печати.
+        const maxText = Math.min(280 * dpr, canvas.width * 0.62) - padding * 2;
+        let label = text;
+        if (ctx.measureText(label).width > maxText) {
+          while (label.length > 8 && ctx.measureText(label + "…").width > maxText) {
+            label = label.slice(0, -1);
+          }
+          label = label.replace(/[\s,.:;—-]+$/, "") + "…";
+        }
+        const w = ctx.measureText(label).width + padding * 2;
+        const h = size * 1.9;
+        let bx = x - w / 2;
+        let by = y - h - scale * 1.6;
+        bx = Math.max(4, Math.min(bx, canvas.width - w - 4));
+        by = Math.max(4, by);
+
+        const hits = (ay) =>
+          placed.some((p) => bx < p.x + p.w && bx + w > p.x && ay < p.y + p.h && ay + h > p.y);
+        for (let attempt = 0; attempt < 3 && hits(by); attempt++) by -= h + 5 * dpr;
+        if (by < 4 || hits(by)) return;
+        placed.push({ x: bx, y: by, w, h });
+
+        ctx.fillStyle = "rgba(10, 14, 18, 0.88)";
+        ctx.strokeStyle = role === "boss" ? "rgba(217,89,38,0.55)" : "rgba(25,158,112,0.55)";
+        ctx.lineWidth = dpr;
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(bx, by, w, h, [h / 2, h / 2, h / 2, 3 * dpr]);
+        else ctx.rect(bx, by, w, h);
+        ctx.fill();
+        ctx.stroke();
+
+        // Хвостик к голове — чтобы было понятно, чья это мысль.
+        ctx.beginPath();
+        ctx.moveTo(x - size * 0.25, by + h);
+        ctx.lineTo(x, y - scale * 0.9);
+        ctx.lineTo(x + size * 0.25, by + h);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = "#e9eef2";
+        ctx.textBaseline = "middle";
+        ctx.fillText(label, bx + padding, by + h / 2);
+      }
 
       function draw() {
         const rect = canvas.getBoundingClientRect();
@@ -753,70 +1368,85 @@
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Земля: тёмная основа плюс, если загрузилась, мягкая фактура сверху.
-        ctx.fillStyle = "#101812";
+        // Пол предприятия.
+        ctx.fillStyle = "#0e1318";
         ctx.fillRect(ox, oy, world.width * scale, world.height * scale);
-        if (groundPattern) {
+        if (floorPattern) {
           ctx.save();
-          ctx.globalAlpha = 0.22;
+          ctx.globalAlpha = 0.3;
           ctx.globalCompositeOperation = "soft-light";
-          ctx.fillStyle = groundPattern;
+          ctx.fillStyle = floorPattern;
           ctx.fillRect(ox, oy, world.width * scale, world.height * scale);
           ctx.restore();
         }
 
-        // Плодородные зоны — мягкое свечение, а не плоский круг.
+        // Забор и проходная — чистое украшение: на правила они не влияют,
+        // но без них территория выглядит просто тёмным квадратом.
+        ctx.strokeStyle = "rgba(160, 200, 230, 0.10)";
+        ctx.lineWidth = dpr;
+        ctx.setLineDash([10 * dpr, 8 * dpr]);
+        ctx.strokeRect(sx(2), sy(2), (world.width - 4) * scale, (world.height - 4) * scale);
+        ctx.setLineDash([]);
+        ctx.fillStyle = "rgba(160, 200, 230, 0.06)";
+        ctx.fillRect(sx(44), sy(world.height - 4), 12 * scale, 3 * scale);
+        ctx.fillStyle = "rgba(174, 189, 201, 0.30)";
+        ctx.font = 10 * dpr + "px ui-sans-serif, system-ui, sans-serif";
+        ctx.textBaseline = "alphabetic";
+        ctx.fillText("ПРОХОДНАЯ", sx(44) + 4 * dpr, sy(world.height - 4) - 5 * dpr);
+
+        // Цех: круг, потому что именно по кругу считается укрытие в правилах.
         for (const z of zones) {
           const r = z.radius * scale;
-          const g = ctx.createRadialGradient(sx(z.x), sy(z.y), 0, sx(z.x), sy(z.y), r);
-          g.addColorStop(0, "rgba(25, 158, 112, 0.20)");
-          g.addColorStop(1, "rgba(25, 158, 112, 0)");
+          const g = ctx.createRadialGradient(sx(z.x), sy(z.y), r * 0.2, sx(z.x), sy(z.y), r);
+          g.addColorStop(0, "rgba(25, 158, 112, 0.13)");
+          g.addColorStop(1, "rgba(25, 158, 112, 0.02)");
           ctx.fillStyle = g;
           ctx.beginPath();
           ctx.arc(sx(z.x), sy(z.y), r, 0, Math.PI * 2);
           ctx.fill();
+          ctx.strokeStyle = "rgba(25, 158, 112, 0.30)";
+          ctx.lineWidth = dpr;
+          ctx.setLineDash([6 * dpr, 6 * dpr]);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.fillStyle = "rgba(143, 240, 200, 0.35)";
+          ctx.font = 11 * dpr + "px ui-sans-serif, system-ui, sans-serif";
+          ctx.textBaseline = "alphabetic";
+          ctx.fillText("ЦЕХ", sx(z.x) - 12 * dpr, sy(z.y - z.radius) + 16 * dpr);
         }
 
-        // Препятствия.
-        for (const o of obstacles) {
-          ctx.fillStyle = COLORS.stone;
+        // Станки.
+        for (const o of machines) {
+          ctx.fillStyle = COLORS.machine;
           ctx.beginPath();
           if (o.shape === "circle") ctx.arc(sx(o.x), sy(o.y), o.radius * scale, 0, Math.PI * 2);
-          else if (ctx.roundRect) ctx.roundRect(sx(o.x), sy(o.y), o.width * scale, o.height * scale, 4 * dpr);
+          else if (ctx.roundRect) ctx.roundRect(sx(o.x), sy(o.y), o.width * scale, o.height * scale, 3 * dpr);
           else ctx.rect(sx(o.x), sy(o.y), o.width * scale, o.height * scale);
           ctx.fill();
-          ctx.strokeStyle = "rgba(255,255,255,0.07)";
+          ctx.strokeStyle = "rgba(160, 200, 230, 0.16)";
           ctx.lineWidth = dpr;
           ctx.stroke();
         }
 
-        // Еда — маленькие ростки.
-        ctx.strokeStyle = COLORS.food;
-        ctx.lineWidth = Math.max(scale * 0.12, 1);
-        for (const f of food) {
-          const x = sx(f.x);
-          const y = sy(f.y);
-          ctx.beginPath();
-          ctx.moveTo(x, y + scale * 0.32);
-          ctx.lineTo(x, y - scale * 0.22);
-          ctx.stroke();
-          ctx.fillStyle = COLORS.food;
-          ctx.beginPath();
-          ctx.arc(x, y - scale * 0.3, Math.max(scale * 0.2, 1), 0, Math.PI * 2);
-          ctx.fill();
+        // Задачи — маленькие бумажки на полу.
+        ctx.fillStyle = COLORS.task;
+        ctx.globalAlpha = 0.65;
+        for (const t of tasks) {
+          const s = Math.max(scale * 0.34, 1.4);
+          ctx.fillRect(sx(t.x) - s / 2, sy(t.y) - s / 2, s, s);
         }
+        ctx.globalAlpha = 1;
 
-        // Агенты: цвет — вид, яркость и размер — сытость.
+        // Люди: круг — рабочий, квадрат — начальник (форма, а не только цвет).
         const progress = Math.min((now - tweenStart) / TWEEN_MS, 1);
-        for (const a of tracked.values()) {
+        for (const [id, a] of tracked) {
           const x = sx(a.fromX + (a.toX - a.fromX) * progress);
           const y = sy(a.fromY + (a.toY - a.fromY) * progress);
-          const predator = a.type === "predator";
-          const full = Math.max(0.15, Math.min(a.energy / (predator ? 200 : 140), 1));
-          const r = Math.max(scale * (predator ? 0.8 : 0.58), 2);
+          const boss = isBoss(a.type);
+          const full = Math.max(0.15, Math.min(a.energy / (boss ? 200 : 140), 1));
+          const r = Math.max(scale * (boss ? 0.82 : 0.6), 2);
 
-          if (predator && a.energy < SATIATED_AT) {
-            // Кольцо — признак того, что хищник голоден и охотится.
+          if (boss && a.energy < SATIATED_AT) {
             ctx.strokeStyle = "rgba(217, 89, 38, 0.45)";
             ctx.lineWidth = Math.max(dpr, scale * 0.12);
             ctx.beginPath();
@@ -825,28 +1455,43 @@
           }
 
           ctx.globalAlpha = 0.35 + full * 0.65;
-          ctx.fillStyle = predator ? COLORS.pred : COLORS.herb;
+          ctx.fillStyle = boss ? COLORS.boss : COLORS.worker;
           ctx.beginPath();
-          ctx.arc(x, y, r, 0, Math.PI * 2);
+          if (boss) {
+            if (ctx.roundRect) ctx.roundRect(x - r, y - r, r * 2, r * 2, r * 0.45);
+            else ctx.rect(x - r, y - r, r * 2, r * 2);
+          } else {
+            ctx.arc(x, y, r, 0, Math.PI * 2);
+          }
           ctx.fill();
 
-          // Светлый «нос» по направлению движения — видно, куда бежит.
+          // Светлая «каска» по направлению движения — видно, куда человек идёт.
           ctx.globalAlpha = 0.5 + full * 0.4;
-          ctx.fillStyle = predator ? "#ffb896" : "#8ff0c8";
+          ctx.fillStyle = boss ? "#ffb896" : "#8ff0c8";
           ctx.beginPath();
-          ctx.arc(x + Math.cos(a.angle) * r * 0.55, y + Math.sin(a.angle) * r * 0.55, r * 0.42, 0, Math.PI * 2);
+          ctx.arc(x + Math.cos(a.angle) * r * 0.55, y + Math.sin(a.angle) * r * 0.55, r * 0.4, 0, Math.PI * 2);
           ctx.fill();
           ctx.globalAlpha = 1;
+
+          if (id === selectedId) {
+            ctx.strokeStyle = "#e9eef2";
+            ctx.lineWidth = Math.max(dpr * 1.5, scale * 0.16);
+            ctx.beginPath();
+            ctx.arc(x, y, r * 2.8, 0, Math.PI * 2);
+            ctx.stroke();
+          }
         }
 
-        // Вспышки рождений и смертей живут 900 мс.
+        // Вспышки: пришёл новый человек / кого-то не стало.
         flashes = flashes.filter((f) => now - f.born < 900);
         for (const f of flashes) {
           const t = (now - f.born) / 900;
           const r = scale * (0.6 + t * 2.2);
           ctx.globalAlpha = (1 - t) * 0.7;
           ctx.strokeStyle =
-            f.kind === "birth" ? "rgba(139, 240, 200, 0.9)" : f.kind === "eaten" ? "rgba(217, 89, 38, 0.9)" : "rgba(255,255,255,0.7)";
+            f.kind === "hire" ? "rgba(139, 240, 200, 0.9)"
+              : f.kind === "fired" ? "rgba(217, 89, 38, 0.9)"
+              : "rgba(255,255,255,0.7)";
           ctx.lineWidth = Math.max(dpr, scale * 0.14);
           ctx.beginPath();
           ctx.arc(sx(f.x), sy(f.y), r, 0, Math.PI * 2);
@@ -854,7 +1499,29 @@
           ctx.globalAlpha = 1;
         }
 
-        // Виньетка, чтобы край карты не выглядел обрезанным.
+        // Мысли прямо в цеху — у нескольких человек и у выбранного.
+        if (now - spotlightAt > 5000) {
+          pickSpotlight(rect.width < 520);
+          spotlightAt = now;
+        }
+        // Выбранный человек говорит первым: его реплику мы обещали показать,
+        // а место на карте достаётся тому, кто нарисован раньше.
+        const speaking = [...new Set([...(selectedId ? [selectedId] : []), ...spotlight])];
+        const placed = [];
+        const said = new Set();
+        for (const id of speaking) {
+          const a = tracked.get(id);
+          const mind = minds.get(id);
+          if (!a || !mind) continue;
+          // Одна и та же реплика дважды на экране читается как сбой отрисовки.
+          if (said.has(mind.thought)) continue;
+          said.add(mind.thought);
+          const x = sx(a.fromX + (a.toX - a.fromX) * progress);
+          const y = sy(a.fromY + (a.toY - a.fromY) * progress);
+          drawBubble(x, y, mind.thought, mind.role, dpr, scale, placed);
+        }
+
+        // Виньетка, чтобы край не выглядел обрезанным.
         const vg = ctx.createRadialGradient(
           canvas.width / 2, canvas.height / 2, Math.min(canvas.width, canvas.height) * 0.35,
           canvas.width / 2, canvas.height / 2, Math.max(canvas.width, canvas.height) * 0.75,
@@ -867,7 +1534,7 @@
         requestAnimationFrame(draw);
       }
 
-      /* ---------- график популяций ---------- */
+      /* ================= график ================= */
 
       const chart = el("chart");
       const NS = "http://www.w3.org/2000/svg";
@@ -892,9 +1559,7 @@
       function drawChart() {
         chart.textContent = "";
         if (history.length < 2) {
-          chart.appendChild(
-            node("text", { x: 12, y: 24, class: "axis" }, "Ждём первых снимков популяции…"),
-          );
+          chart.appendChild(node("text", { x: 12, y: 24, class: "axis" }, "Ждём первых снимков…"));
           return;
         }
 
@@ -903,15 +1568,11 @@
         const h = box.height || 240;
         chart.setAttribute("viewBox", `0 0 ${w} ${h}`);
 
-        const maxY = Math.max(
-          10,
-          ...history.map((p) => Math.max(p.herbivore_count, p.predator_count)),
-        );
+        const maxY = Math.max(10, ...history.map((p) => Math.max(p.herbivore_count, p.predator_count)));
         const x = (i) => PAD.left + (i / (history.length - 1)) * (w - PAD.left - PAD.right);
         const y = (v) => h - PAD.bottom - (v / maxY) * (h - PAD.top - PAD.bottom);
         chartGeom = { x, y, w, h, maxY };
 
-        // Сетка и подписи оси — намеренно тусклые, данные важнее.
         for (const t of niceTicks(maxY)) {
           chart.appendChild(node("line", { class: "grid", x1: PAD.left, x2: w - PAD.right, y1: y(t), y2: y(t) }));
           chart.appendChild(node("text", { class: "axis", x: 4, y: y(t) + 4 }, String(Math.round(t))));
@@ -921,32 +1582,18 @@
         const last = new Date(history[history.length - 1].snapshot_at);
         const hm = (d) => String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
         chart.appendChild(node("text", { class: "axis", x: PAD.left, y: h - 6 }, hm(first)));
-        chart.appendChild(
-          node("text", { class: "axis", x: w - PAD.right, y: h - 6, "text-anchor": "end" }, hm(last)),
-        );
+        chart.appendChild(node("text", { class: "axis", x: w - PAD.right, y: h - 6, "text-anchor": "end" }, hm(last)));
 
-        const series = [
-          { key: "herbivore_count", color: COLORS.herb, label: "травоядные" },
-          { key: "predator_count", color: COLORS.pred, label: "хищники" },
-        ];
-
-        for (const s of series) {
+        for (const s of [
+          { key: "herbivore_count", color: COLORS.worker },
+          { key: "predator_count", color: COLORS.boss },
+        ]) {
           const d = history.map((p, i) => (i ? "L" : "M") + x(i) + " " + y(p[s.key])).join(" ");
           chart.appendChild(node("path", { class: "line", d, stroke: s.color }));
-
-          // Прямая подпись у конца линии —опознание не только по цвету.
           const lastValue = history[history.length - 1][s.key];
           chart.appendChild(
-            node(
-              "text",
-              {
-                class: "end-label",
-                x: w - PAD.right + 8,
-                y: y(lastValue) + 4,
-                fill: s.color,
-              },
-              String(lastValue),
-            ),
+            node("text", { class: "end-label", x: w - PAD.right + 8, y: y(lastValue) + 4, fill: s.color },
+              String(lastValue)),
           );
         }
       }
@@ -957,40 +1604,27 @@
         if (!chartGeom || history.length < 2) return;
         const box = chart.getBoundingClientRect();
         const px = e.clientX - box.left;
-        const i = Math.max(
-          0,
-          Math.min(
-            history.length - 1,
-            Math.round(
-              ((px - PAD.left) / (chartGeom.w - PAD.left - PAD.right)) * (history.length - 1),
-            ),
-          ),
-        );
+        const i = Math.max(0, Math.min(history.length - 1,
+          Math.round(((px - PAD.left) / (chartGeom.w - PAD.left - PAD.right)) * (history.length - 1))));
         const p = history[i];
         chart.querySelectorAll(".crosshair, .hover-dot").forEach((n) => n.remove());
-        chart.appendChild(
-          node("line", { class: "crosshair", x1: chartGeom.x(i), x2: chartGeom.x(i), y1: PAD.top, y2: chartGeom.h - PAD.bottom }),
-        );
+        chart.appendChild(node("line", {
+          class: "crosshair", x1: chartGeom.x(i), x2: chartGeom.x(i),
+          y1: PAD.top, y2: chartGeom.h - PAD.bottom,
+        }));
         for (const s of [
-          { key: "herbivore_count", color: COLORS.herb },
-          { key: "predator_count", color: COLORS.pred },
+          { key: "herbivore_count", color: COLORS.worker },
+          { key: "predator_count", color: COLORS.boss },
         ]) {
-          chart.appendChild(
-            node("circle", {
-              class: "hover-dot",
-              cx: chartGeom.x(i),
-              cy: chartGeom.y(p[s.key]),
-              r: 4,
-              fill: s.color,
-              stroke: "#141b17",
-              "stroke-width": 2,
-            }),
-          );
+          chart.appendChild(node("circle", {
+            class: "hover-dot", cx: chartGeom.x(i), cy: chartGeom.y(p[s.key]),
+            r: 4, fill: s.color, stroke: "#14181d", "stroke-width": 2,
+          }));
         }
         const t = new Date(p.snapshot_at);
         tooltip.innerHTML =
           String(t.getHours()).padStart(2, "0") + ":" + String(t.getMinutes()).padStart(2, "0") +
-          " · травоядные <b>" + p.herbivore_count + "</b> · хищники <b>" + p.predator_count + "</b>";
+          " · рабочие <b>" + p.herbivore_count + "</b> · начальники <b>" + p.predator_count + "</b>";
         tooltip.style.opacity = "1";
         tooltip.style.left = Math.min(chartGeom.x(i) + 12, chartGeom.w - 210) + "px";
         tooltip.style.top = "8px";
@@ -1021,7 +1655,7 @@
 
       window.addEventListener("resize", drawChart);
 
-      /* ---------- ручное вмешательство ---------- */
+      /* ================= вмешательство ================= */
 
       const statusNode = el("status");
 
@@ -1030,8 +1664,6 @@
         statusNode.className = "status" + (kind ? " " + kind : "");
       }
 
-      // Один и тот же обработчик для кнопок и для клика по карте:
-      // выполняет действие, показывает результат и сразу перечитывает мир.
       async function act(fn, args, describe) {
         const buttons = document.querySelectorAll(".tool, .danger");
         buttons.forEach((b) => (b.disabled = true));
@@ -1039,11 +1671,8 @@
         try {
           const data = await rpc(fn, args);
           setStatus(describe(data), "good");
-          // Своё действие показываем сразу, не дожидаясь Realtime:
-          // он может быть недоступен, а обратная связь нужна всегда.
           await Promise.all([refresh(), loadMap(), loadJournal()]);
         } catch (e) {
-          // Сообщения об отказах приходят из базы уже на русском.
           setStatus(e && e.message ? e.message : String(e), "bad");
         } finally {
           buttons.forEach((b) => (b.disabled = false));
@@ -1056,7 +1685,12 @@
           document.querySelectorAll(".tool").forEach((b) =>
             b.setAttribute("aria-pressed", String(b === btn)),
           );
-          setStatus("Кликните по карте: " + btn.textContent.toLowerCase(), null);
+          setStatus(
+            tool === "look"
+              ? "Нажмите на человечка — покажу, кто это и о чём он думает."
+              : "Нажмите на цех: " + btn.textContent.toLowerCase(),
+            null,
+          );
         });
       });
 
@@ -1067,41 +1701,60 @@
         const x = ((e.clientX - rect.left) * dpr - ox) / scale;
         const y = ((e.clientY - rect.top) * dpr - oy) / scale;
         if (x < 0 || y < 0 || x > world.width || y > world.height) {
-          setStatus("Это за краем мира — кликните внутри карты.", "bad");
+          setStatus("Это за территорией предприятия.", "bad");
+          return;
+        }
+
+        if (tool === "look") {
+          // Берём ближайшего в разумном радиусе: на телефоне палец толстый.
+          let best = null;
+          let bestDist = 4;
+          for (const [id, a] of tracked) {
+            const d = dist(x, y, a.toX, a.toY);
+            if (d < bestDist) {
+              bestDist = d;
+              best = id;
+            }
+          }
+          selectedId = best;
+          renderCard();
+          const mind = best ? minds.get(best) : null;
+          setStatus(
+            mind ? mind.name + ": «" + mind.thought + "»" : "Здесь никого нет — нажмите прямо на человечка.",
+            mind ? "good" : null,
+          );
           return;
         }
 
         if (tool === "feed") {
-          act("feed_world", { p_x: x, p_y: y, p_amount: 12 }, (n) => "Подкормил: " + n + " шт");
+          act("feed_world", { p_x: x, p_y: y, p_amount: 12 }, (n) => "Подкинул задач: " + n);
         } else if (tool === "obstacle") {
           act("toggle_obstacle", { p_x: x, p_y: y }, (r) =>
-            r === "added" ? "Камень поставлен" : "Камень убран");
+            r === "added" ? "Станок поставлен" : "Станок убран");
         } else {
           act("spawn_agent", { p_type: tool, p_x: x, p_y: y }, () =>
-            tool === "predator" ? "Хищник подселён" : "Травоядное подселено");
+            tool === "predator" ? "Назначен новый начальник" : "Принят на работу");
         }
       });
 
       el("drought").addEventListener("click", () => {
-        if (!confirm("Засуха уничтожит примерно 60% еды на карте. Продолжить?")) return;
-        act("cataclysm", { p_kind: "drought" }, (n) => "Засуха: еды стало меньше на " + n);
+        if (!confirm("Срыв поставок: из цеха исчезнет около 60% задач. Продолжить?")) return;
+        act("cataclysm", { p_kind: "drought" }, (n) => "Срыв поставок: задач стало меньше на " + n);
       });
 
       el("plague").addEventListener("click", () => {
-        if (!confirm("Мор убьёт примерно 30% популяции. Продолжить?")) return;
-        act("cataclysm", { p_kind: "plague" }, (n) => "Мор: погибло " + n);
+        if (!confirm("Сокращение: предприятие покинет около 30% людей. Продолжить?")) return;
+        act("cataclysm", { p_kind: "plague" }, (n) => "Сокращение: уволено " + n);
       });
 
       const JOURNAL = {
-        feed: (d) => "подкормка · " + (d.amount ?? "?") + " шт",
-        spawn: (d) => "подселили: " + (d.type === "predator" ? "хищник" : "травоядное"),
-        obstacle_added: () => "поставлен камень",
-        obstacle_removed: () => "убран камень",
-        cataclysm: (d) => (d.kind === "plague" ? "мор" : "засуха") + " · −" + (d.removed ?? 0),
-        order: (d) =>
-          "приказ " + (d.species === "predator" ? "хищникам" : "травоядным") + ": " + (d.kind ?? ""),
-        order_cancelled: (d) =>
-          "приказ отменён (" + (d.species === "predator" ? "хищники" : "травоядные") + ")",
+        feed: (d) => "подкинули задач · " + (d.amount ?? "?"),
+        spawn: (d) => (isBoss(d.type) ? "назначен начальник" : "принят рабочий"),
+        obstacle_added: () => "поставили станок",
+        obstacle_removed: () => "убрали станок",
+        cataclysm: (d) => (d.kind === "plague" ? "сокращение" : "срыв поставок") + " · −" + (d.removed ?? 0),
+        order: (d) => "сказали " + (isBoss(d.species) ? "начальникам" : "рабочим") + ": " + (KIND_SHORT[d.kind] ?? d.kind),
+        order_cancelled: (d) => "отбой (" + (isBoss(d.species) ? "начальники" : "рабочие") + ")",
       };
 
       function renderJournal(rows) {
@@ -1119,35 +1772,38 @@
         }
       }
 
-      let journal = [];
-
       async function loadJournal() {
         const rows = await select("intervention_log", "select=action,detail,at&order=id.desc&limit=8");
-        journal = rows ?? [];
-        renderJournal(journal);
+        renderJournal(rows ?? []);
       }
 
-      /* ---------- команды видам ---------- */
+      /* ================= распоряжения ================= */
 
-      // Правила мира понимают пять примитивов. Текст в примитив превращает
-      // Edge Function "command" через Claude — но только если в Vault лежит
-      // ключ. Если ключа нет, разбираем сами, по ключевым словам: грубее,
-      // зато работает всегда и не стоит денег.
+      // Правила мира понимают пять примитивов поведения. Текст в примитив
+      // превращает Edge Function "command" через Claude — а если ключа нет,
+      // разбираем сами, по ключевым словам: грубее, зато всегда и бесплатно.
       const RULES = [
-        { kind: "cancel", re: /отмен|отбой|как обычно|как раньше|свобод|разойд|хватит|забуд/ },
-        { kind: "mob", re: /уб[еи]й|убив|убит|атак|напад|окруж|толп|заби|раст?опч|задав|отомст|порв/ },
-        { kind: "flee", re: /бег|разбеж|убега|спаса|пряч|врассып|отступ|уход|драп/ },
-        { kind: "gather", re: /собер|собрат|собир|вместе|куч|сомкн|\bстройс|сойд|центр/ },
-        { kind: "hunt", re: /охот|лови|ловит|догон|жри|ешь|загон|presledu|преслед/ },
-        { kind: "rest", re: /сто[йя]|отдых|отдых|замри|не двиг|ждит|подожд|привал|спат/ },
+        { kind: "cancel", re: /отмен|отбой|как обычно|как раньше|свобод|разойд|хватит|забуд|работаем как/ },
+        { kind: "mob", re: /бастуй|забастов|стачк|выживи|выжив|уволь|выгн|уб[еи]й|убив|атак|напад|окруж|обступ|толп|заби|задав|отомст|бунт|восста/ },
+        { kind: "flee", re: /пряч|прята|бег|разбеж|убега|спаса|врассып|отступ|уход|драп|скрой/ },
+        { kind: "gather", re: /собер|собрат|собир|вместе|куч|сомкн|\bстройс|сойд|планёр|планер|летучк|собрани|митинг|центр/ },
+        { kind: "hunt", re: /контрол|провер|надзор|обход|дави|гоня|лови|догон|загон|преслед|спрашивай|строж/ },
+        { kind: "rest", re: /перекур|обед|отдых|сто[йя]|замри|не двиг|ждит|подожд|привал|перерыв|кабинет/ },
       ];
 
       const KIND_LABEL = {
-        mob: "травля: сойтись на одном хищнике и бить числом",
-        flee: "бегство врассыпную",
+        mob: "забастовка: обступить одного начальника и додавить числом",
+        flee: "прятаться и расходиться по углам",
         gather: "сбор в одной точке",
-        hunt: "неотступная охота",
-        rest: "стоять и копить силы",
+        hunt: "тотальный контроль: спрашивать со всех без передышки",
+        rest: "перекур: стоять и копить силы",
+      };
+      const KIND_SHORT = {
+        mob: "забастовка",
+        flee: "прятаться",
+        gather: "сбор",
+        hunt: "тотальный контроль",
+        rest: "перекур",
       };
 
       function parseByKeywords(species, text) {
@@ -1155,13 +1811,13 @@
         for (const rule of RULES) {
           if (!rule.re.test(lower)) continue;
 
-          // Приказ, недоступный виду, — это отказ, а не повод молча
-          // подставить другой: иначе человек не поймёт, что произошло.
-          if (rule.kind === "mob" && species !== "herbivore") {
-            return { error: "Травить хищника может только стадо — выберите «Травоядным»." };
+          // Приказ, недоступный этой стороне, — отказ, а не молчаливая замена:
+          // иначе человек не поймёт, что именно произошло.
+          if (rule.kind === "mob" && isBoss(species)) {
+            return { error: "Бастовать могут только рабочие — выберите «Рабочим»." };
           }
-          if (rule.kind === "hunt" && species !== "predator") {
-            return { error: "Охотиться могут только хищники — выберите «Хищникам»." };
+          if (rule.kind === "hunt" && !isBoss(species)) {
+            return { error: "Спрашивать со всех могут только начальники — выберите «Начальникам»." };
           }
 
           const params = {};
@@ -1170,7 +1826,7 @@
             if (point) {
               params.x = Math.min(100, Number(point[1]));
               params.y = Math.min(100, Number(point[2]));
-            } else if (/центр|середин/.test(lower)) {
+            } else if (/центр|середин|цех/.test(lower)) {
               params.x = 50;
               params.y = 50;
             }
@@ -1183,19 +1839,22 @@
       function renderOrders(rows) {
         const list = el("orders");
         list.textContent = "";
+        orderByRole = { worker: null, boss: null };
         for (const row of rows) {
+          const role = roleOf(row.species);
+          orderByRole[role] = row.kind;
           const left = Math.max(0, Math.round((new Date(row.expires_at) - Date.now()) / 1000));
           const li = document.createElement("li");
-          li.className = row.species === "predator" ? "pred" : "herb";
+          li.className = role;
           li.innerHTML =
-            "<span><b>" + (row.species === "predator" ? "Хищники" : "Травоядные") + "</b> · " +
+            "<span><b>" + (role === "boss" ? "Начальники" : "Рабочие") + "</b> · " +
             (KIND_LABEL[row.kind] ?? row.kind) + " · " + left + " с</span>";
           const cancel = document.createElement("button");
           cancel.type = "button";
-          cancel.title = "Отменить приказ";
+          cancel.title = "Отменить";
           cancel.textContent = "×";
           cancel.addEventListener("click", () =>
-            act("issue_order", { p_species: row.species, p_kind: "cancel" }, () => "Приказ отменён"),
+            act("issue_order", { p_species: row.species, p_kind: "cancel" }, () => "Отбой"),
           );
           li.appendChild(cancel);
           list.appendChild(li);
@@ -1217,17 +1876,15 @@
         const species = el("species").value;
         const text = el("command").value.trim();
         if (text.length < 2) {
-          setStatus("Напишите команду словами — например «разбегайтесь».", "bad");
+          setStatus("Напишите словами — например «прячьтесь за станки».", "bad");
           return;
         }
 
         const button = el("send");
         button.disabled = true;
-        setStatus("Разбираю команду…", null);
+        setStatus("Разбираю сказанное…", null);
 
         try {
-          // Сначала пробуем сервер: там команду читает Claude.
-          // Не ответил или ответил ошибкой — не беда, разберём сами.
           const answer = await invoke("command", { species, text }).catch(() => null);
 
           if (answer && answer.understood) {
@@ -1237,7 +1894,6 @@
             return;
           }
 
-          // Ключа Claude нет (или сервер не ответил) — разбираем сами.
           const parsed = parseByKeywords(species, text);
           if (parsed && parsed.error) {
             setStatus(parsed.error, "bad");
@@ -1245,8 +1901,8 @@
           }
           if (!parsed) {
             setStatus(
-              "Не понял команду. Попробуйте по-другому: «окружите хищника и убейте», " +
-                "«разбегайтесь», «соберитесь в центре», «отдыхайте», «отбой».",
+              "Не понял. Попробуйте по-другому: «бастуйте, обступите начальника», " +
+                "«прячьтесь за станки», «все на планёрку в центр», «перекур», «отбой».",
               "bad",
             );
             return;
@@ -1263,13 +1919,13 @@
 
           setStatus(
             parsed.kind === "cancel"
-              ? "Приказ отменён — вид живёт как обычно."
+              ? "Отбой — люди работают как обычно."
               : "Понял так (по ключевым словам): " + KIND_LABEL[parsed.kind] + ".",
             "good",
           );
           el("command").value = "";
           await Promise.all([loadOrders(), loadJournal()]);
-          if (!data && parsed.kind !== "cancel") setStatus("Приказ не применился", "bad");
+          if (!data && parsed.kind !== "cancel") setStatus("Распоряжение не применилось", "bad");
         } catch (e) {
           setStatus(e && e.message ? e.message : String(e), "bad");
         } finally {
@@ -1290,25 +1946,30 @@
         });
       });
 
-      /* ---------- запуск ---------- */
+      /* ================= запуск ================= */
 
       async function start() {
-        // Карта и мир — обязательны. Остальное (история, журнал, приказы)
-        // не должно мешать показать мир, если именно эта таблица недоступна.
         await loadMap();
         await refresh();
+        think();
         requestAnimationFrame(draw);
 
         await Promise.allSettled([loadHistory(), loadJournal(), loadOrders()]);
 
-        // Опрос вместо Realtime: тик и так раз в 3 секунды, а подписка тянула
-        // за собой библиотеку и websocket, который на мобильной сети рвётся.
         setInterval(() => refresh().catch(() => {}), FALLBACK_POLL_MS);
         setInterval(() => loadHistory().catch(() => {}), 60000);
         setInterval(() => loadJournal().catch(() => {}), 20000);
         setInterval(() => loadOrders().catch(() => {}), 15000);
         setInterval(() => setPulse(world.last_tick_at), 1000);
-        // У приказов тикает обратный отсчёт, а по истечении они пропадают сами.
+        // Мысли пересчитываем реже, чем рисуем: это O(рабочие × начальники),
+        // и каждый кадр так считать незачем — настроение меняется медленнее.
+        setInterval(think, 1500);
+        setInterval(() => {
+          renderCloud("worker");
+          renderCloud("boss");
+        }, 4000);
+        renderCloud("worker");
+        renderCloud("boss");
         setInterval(() => {
           orders = orders.filter((o) => new Date(o.expires_at) > Date.now());
           renderOrders(orders);
