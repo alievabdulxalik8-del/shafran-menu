@@ -158,7 +158,61 @@
         border: 1px solid var(--line);
         background: var(--panel-2);
       }
-      canvas#world { display: block; width: 100%; aspect-ratio: 1 / 1; max-height: 74vh; cursor: pointer; }
+      canvas#world {
+        display: block;
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        max-height: 74vh;
+        cursor: pointer;
+        /* pan-y оставляет за браузером вертикальную прокрутку страницы:
+           иначе на телефоне палец «залипает» на большой карте и страницу
+           не пролистать. Всё остальное (два пальца) достаётся нам. */
+        touch-action: pan-y;
+      }
+      canvas#world.grabbing { cursor: grab; }
+
+      .zoom {
+        position: absolute;
+        right: 10px;
+        bottom: 10px;
+        display: flex;
+        gap: 6px;
+        z-index: 2;
+      }
+      .zoom-btn {
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
+        border: 1px solid var(--line);
+        background: rgba(12, 16, 21, 0.82);
+        color: var(--text-2);
+        font-size: 17px;
+        line-height: 1;
+        cursor: pointer;
+        font-family: inherit;
+      }
+      .zoom-btn.wide { width: auto; padding: 0 12px; font-size: 12.5px; }
+      .zoom-btn:hover { color: var(--text); border-color: #3a4a57; }
+
+      .zoom-hint, .follow {
+        position: absolute;
+        left: 12px;
+        margin: 0;
+        font-size: 12px;
+        color: var(--text-2);
+        background: rgba(12, 16, 21, 0.78);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 4px 11px;
+        z-index: 2;
+      }
+      .zoom-hint { bottom: 14px; }
+      .follow { top: 12px; display: inline-flex; align-items: center; gap: 6px; }
+      .follow b { color: #8ff0c8; font-weight: 500; }
+      .follow button {
+        background: transparent; border: none; color: inherit;
+        cursor: pointer; font-size: 14px; line-height: 1; padding: 0 2px;
+      }
 
       .legend {
         display: flex;
@@ -463,7 +517,21 @@
         </div>
       </div>
 
-      <div class="stage"><canvas id="world"></canvas></div>
+      <div class="stage">
+        <canvas id="world"></canvas>
+        <p class="zoom-hint" id="zoom-hint">
+          Приблизьте — и человечков станет видно в лицо
+        </p>
+        <div class="zoom">
+          <button class="zoom-btn" type="button" id="zoom-out" aria-label="Отдалить">−</button>
+          <button class="zoom-btn" type="button" id="zoom-in" aria-label="Приблизить">+</button>
+          <button class="zoom-btn wide" type="button" id="zoom-reset">Весь цех</button>
+        </div>
+        <p class="follow" id="follow" hidden>
+          иду за: <b id="follow-name">—</b>
+          <button type="button" id="follow-stop" aria-label="Перестать идти следом">×</button>
+        </p>
+      </div>
 
       <div class="legend">
         <span><i class="swatch" style="background:var(--worker)"></i>рабочий</span>
@@ -472,6 +540,7 @@
         <span><i class="swatch machine"></i>станок</span>
         <span><i class="swatch shop"></i>цех: за станками начальник почти не видит</span>
         <span>яркость — сколько в человеке сил</span>
+        <span>приблизьте колесом, двумя пальцами или двойным нажатием — увидите лица</span>
       </div>
 
       <div class="minds">
@@ -687,6 +756,21 @@
       let lastTransform = null;
       let tool = "look";
       let selectedId = null;
+
+      // Камера цеха: zoom = 1 — виден весь цех целиком, дальше — приближение.
+      // Без приближения человечков не разглядеть: в целом цеху на каждого
+      // приходится несколько пикселей.
+      const camera = { x: 50, y: 50, zoom: 1 };
+      const MAX_ZOOM = 9;
+      let followId = null; // за кем идёт камера
+
+      function clampCamera() {
+        camera.zoom = Math.min(Math.max(camera.zoom, 1), MAX_ZOOM);
+        const halfW = world.width / (2 * camera.zoom);
+        const halfH = world.height / (2 * camera.zoom);
+        camera.x = Math.min(Math.max(camera.x, halfW), world.width - halfW);
+        camera.y = Math.min(Math.max(camera.y, halfH), world.height - halfH);
+      }
 
       el("hero-bg").style.backgroundImage = "url('" + HERO_IMAGE + "')";
 
@@ -1184,6 +1268,9 @@
             type: a.type,
             gen: a.generation,
             speed: a.speed,
+            // Постоянное число человека: по нему расходится фаза шага, чтобы
+            // цех не маршировал строем. Считаем один раз, а не каждый кадр.
+            seed: prev ? prev.seed : hash(a.id),
             angle: Math.atan2(a.y - fromY, a.x - fromX),
           });
         }
@@ -1264,6 +1351,8 @@
       // мысль должно быть видно достаточно долго, чтобы её успели прочитать.
       let spotlight = [];
       let spotlightAt = 0;
+      let vignette = null;
+      let vignetteFor = "";
 
       function pickSpotlight(narrow) {
         const people = [...tracked.keys()];
@@ -1317,13 +1406,16 @@
         const h = size * 1.9;
         let bx = x - w / 2;
         let by = y - h - scale * 1.6;
+        // Сверху оставляем полосу под плашкой «иду за: …», иначе реплика
+        // ложится прямо на неё и нечитаемы обе.
+        const top = (el("follow").hidden ? 4 : 44) * dpr;
         bx = Math.max(4, Math.min(bx, canvas.width - w - 4));
-        by = Math.max(4, by);
+        by = Math.max(top, by);
 
         const hits = (ay) =>
           placed.some((p) => bx < p.x + p.w && bx + w > p.x && ay < p.y + p.h && ay + h > p.y);
         for (let attempt = 0; attempt < 3 && hits(by); attempt++) by -= h + 5 * dpr;
-        if (by < 4 || hits(by)) return;
+        if (by < top || hits(by)) return;
         placed.push({ x: bx, y: by, w, h });
 
         ctx.fillStyle = "rgba(10, 14, 18, 0.88)";
@@ -1348,9 +1440,214 @@
         ctx.fillText(label, bx + padding, by + h / 2);
       }
 
+      /* ---------- человечки ---------- */
+
+      // Лицо — это настроение, которое уже посчитано в think(): мы не выдумываем
+      // выражение, а показываем то же самое, что написано в личном деле.
+      const FACES = {
+        fear:      { eyes: "wide", mouth: "open",  brow: "worry" },
+        rage:      { eyes: "dot",  mouth: "flat",  brow: "angry" },
+        alarm:     { eyes: "wide", mouth: "flat",  brow: "worry" },
+        burnout:   { eyes: "line", mouth: "sad",   brow: "worry" },
+        calm:      { eyes: "line", mouth: "smile", brow: null },
+        focus:     { eyes: "dot",  mouth: "smile", brow: null },
+        content:   { eyes: "dot",  mouth: "smile", brow: null },
+        boredom:   { eyes: "side", mouth: "flat",  brow: null },
+        tired:     { eyes: "line", mouth: "flat",  brow: null },
+        wrath:     { eyes: "dot",  mouth: "open",  brow: "angry" },
+        smug:      { eyes: "line", mouth: "smile", brow: null },
+        panic:     { eyes: "wide", mouth: "open",  brow: "worry" },
+        envy:      { eyes: "side", mouth: "sad",   brow: "angry" },
+        chase:     { eyes: "dot",  mouth: "grin",  brow: "angry" },
+        annoyance: { eyes: "side", mouth: "flat",  brow: "angry" },
+        routine:   { eyes: "dot",  mouth: "flat",  brow: null },
+      };
+
+      // Градиенты — самая дорогая часть фигурки, а их всего два вида на роль.
+      // Создаём их в системе координат самого человечка (после translate),
+      // поэтому один и тот же объект годится для всего цеха.
+      const gradientCache = new Map();
+      function personGradients(role, r) {
+        const key = role + ":" + Math.round(r * 2);
+        let g = gradientCache.get(key);
+        if (g) return g;
+        const body = ctx.createLinearGradient(0, -r * 0.72, 0, r * 0.54);
+        if (role === "boss") {
+          body.addColorStop(0, "#f08a52");
+          body.addColorStop(1, "#8f3416");
+        } else {
+          body.addColorStop(0, "#3fd39a");
+          body.addColorStop(1, "#11694f");
+        }
+        const skin = ctx.createLinearGradient(0, -r * 1.83, 0, -r * 0.73);
+        skin.addColorStop(0, "#ffe0c2");
+        skin.addColorStop(1, "#e0a97f");
+        g = { body, skin };
+        if (gradientCache.size > 40) gradientCache.clear(); // масштаб поменялся
+        gradientCache.set(key, g);
+        return g;
+      }
+
+      const capsule = (x, y, w, h, r) => {
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(x, y, w, h, r);
+        else ctx.rect(x, y, w, h);
+        ctx.fill();
+      };
+
+      // Рост человечка — 3.2r, где r — тот же радиус, которым раньше рисовалась
+      // точка. Всё внутри считается от r, поэтому фигурка одинаково выглядит
+      // и на телефоне, и при сильном приближении.
+      function drawPerson(x, y, r, a, mood, now, dpr) {
+        const boss = isBoss(a.type);
+        const full = Math.max(0.2, Math.min(a.energy / (boss ? 200 : 140), 1));
+        const face = FACES[mood] ?? FACES.routine;
+
+        // Шаг: фаза своя у каждого, иначе цех марширует строем.
+        const phase = now / 210 + (a.seed % 100) / 16;
+        const walk = Math.sin(phase);
+        const bob = walk * r * 0.09;
+        const facing = Math.cos(a.angle) >= 0 ? 1 : -1;
+
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.scale(facing, 1);
+        // Вблизи выцветший человечек выглядит как ошибка отрисовки, поэтому
+        // силы показываем яркостью мягче, чем на точках.
+        ctx.globalAlpha = 0.68 + full * 0.32;
+
+        // Тень — она и делает фигурку стоящей на полу, а не висящей в воздухе.
+        const alpha = ctx.globalAlpha;
+        ctx.globalAlpha = alpha * 0.55;
+        ctx.fillStyle = "rgba(0,0,0,0.75)";
+        ctx.beginPath();
+        ctx.ellipse(0, r * 1.15, r * 0.8, r * 0.26, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = alpha;
+
+        // Ноги.
+        ctx.fillStyle = boss ? "#5b2a16" : "#12503c";
+        capsule(-r * 0.46 + walk * r * 0.22, r * 0.3 + bob, r * 0.36, r * 0.9, r * 0.18);
+        capsule(r * 0.1 - walk * r * 0.22, r * 0.3 + bob, r * 0.36, r * 0.9, r * 0.18);
+
+        // Туловище с бликом сверху — именно блик читается как объём.
+        const paint = personGradients(boss ? "boss" : "worker", r);
+        ctx.fillStyle = paint.body;
+        capsule(-r * 0.62, -r * 0.72 + bob, r * 1.24, r * 1.26, r * 0.4);
+
+        if (boss) {
+          // Рубашка и галстук — начальника видно по одежде, а не только по цвету.
+          ctx.fillStyle = "#f6e9de";
+          ctx.beginPath();
+          ctx.moveTo(-r * 0.22, -r * 0.72 + bob);
+          ctx.lineTo(r * 0.22, -r * 0.72 + bob);
+          ctx.lineTo(0, -r * 0.1 + bob);
+          ctx.closePath();
+          ctx.fill();
+          ctx.fillStyle = "#b4231f";
+          ctx.beginPath();
+          ctx.moveTo(-r * 0.09, -r * 0.62 + bob);
+          ctx.lineTo(r * 0.09, -r * 0.62 + bob);
+          ctx.lineTo(0, -r * 0.08 + bob);
+          ctx.closePath();
+          ctx.fill();
+        } else {
+          // Лямки спецовки.
+          ctx.strokeStyle = "rgba(255,255,255,0.28)";
+          ctx.lineWidth = Math.max(dpr * 0.8, r * 0.1);
+          ctx.beginPath();
+          ctx.moveTo(-r * 0.3, -r * 0.7 + bob);
+          ctx.lineTo(-r * 0.18, r * 0.1 + bob);
+          ctx.moveTo(r * 0.3, -r * 0.7 + bob);
+          ctx.lineTo(r * 0.18, r * 0.1 + bob);
+          ctx.stroke();
+        }
+
+        // Руки.
+        ctx.fillStyle = boss ? "#c9542a" : "#1a8f6b";
+        capsule(-r * 0.86, -r * 0.6 + bob - walk * r * 0.12, r * 0.3, r * 0.82, r * 0.15);
+        capsule(r * 0.56, -r * 0.6 + bob + walk * r * 0.12, r * 0.3, r * 0.82, r * 0.15);
+
+        // Голова.
+        const hy = -r * 1.28 + bob;
+        ctx.fillStyle = paint.skin;
+        ctx.beginPath();
+        ctx.arc(0, hy, r * 0.56, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (boss) {
+          // Причёска: аккуратная, с пробором.
+          ctx.fillStyle = "#3a2a22";
+          ctx.beginPath();
+          ctx.arc(0, hy - r * 0.1, r * 0.56, Math.PI * 1.05, Math.PI * 2.05);
+          ctx.fill();
+        } else {
+          // Каска. Козырёк идёт выше бровей — иначе на мелком масштабе он
+          // читается как очки на пол-лица.
+          ctx.fillStyle = "#f2c14e";
+          ctx.beginPath();
+          ctx.arc(0, hy - r * 0.2, r * 0.58, Math.PI, Math.PI * 2);
+          ctx.fill();
+          ctx.fillRect(-r * 0.7, hy - r * 0.26, r * 1.4, r * 0.13);
+        }
+
+        // Лицо.
+        const eyeY = hy + r * 0.06;
+        ctx.fillStyle = "#2a2018";
+        ctx.strokeStyle = "#2a2018";
+        ctx.lineWidth = Math.max(dpr * 0.7, r * 0.07);
+        for (const side of [-1, 1]) {
+          const ex = side * r * 0.2;
+          if (face.eyes === "line") {
+            ctx.beginPath();
+            ctx.moveTo(ex - r * 0.1, eyeY);
+            ctx.lineTo(ex + r * 0.1, eyeY);
+            ctx.stroke();
+          } else {
+            const rad = face.eyes === "wide" ? r * 0.13 : r * 0.08;
+            const shift = face.eyes === "side" ? r * 0.05 : 0;
+            ctx.beginPath();
+            ctx.arc(ex + shift, eyeY, rad, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          if (face.brow) {
+            // У злого бровь опущена к переносице, у испуганного — поднята.
+            const inner = ex - side * r * 0.14;
+            const outer = ex + side * r * 0.14;
+            const tilt = face.brow === "angry" ? r * 0.09 : -r * 0.09;
+            ctx.beginPath();
+            ctx.moveTo(inner, eyeY - r * 0.22 + tilt);
+            ctx.lineTo(outer, eyeY - r * 0.22 - tilt);
+            ctx.stroke();
+          }
+        }
+
+        const my = hy + r * 0.3;
+        ctx.beginPath();
+        if (face.mouth === "smile" || face.mouth === "grin") {
+          ctx.arc(0, my - r * 0.08, r * (face.mouth === "grin" ? 0.22 : 0.16), 0.15 * Math.PI, 0.85 * Math.PI);
+          ctx.stroke();
+        } else if (face.mouth === "sad") {
+          ctx.arc(0, my + r * 0.12, r * 0.16, 1.15 * Math.PI, 1.85 * Math.PI);
+          ctx.stroke();
+        } else if (face.mouth === "open") {
+          ctx.ellipse(0, my, r * 0.1, r * 0.13, 0, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.moveTo(-r * 0.12, my);
+          ctx.lineTo(r * 0.12, my);
+          ctx.stroke();
+        }
+
+        ctx.restore();
+        ctx.globalAlpha = 1;
+      }
+
       function draw() {
         const rect = canvas.getBoundingClientRect();
-        const dpr = window.devicePixelRatio || 1;
+        // Выше двух точек на пиксель разница не видна, а площадь холста растёт
+        // квадратично: на телефоне с dpr = 3 это вдвое лишняя работа каждый кадр.
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
         const w = Math.round(rect.width * dpr);
         const h = Math.round(rect.height * dpr);
         if (canvas.width !== w || canvas.height !== h) {
@@ -1358,25 +1655,49 @@
           canvas.height = h;
         }
 
-        const scale = Math.min(rect.width / world.width, rect.height / world.height) * dpr;
-        const ox = (canvas.width - world.width * scale) / 2;
-        const oy = (canvas.height - world.height * scale) / 2;
+        // Камера: при zoom = 1 виден весь цех, дальше — приближение к точке,
+        // которую держим в центре экрана. Всё рисование идёт через sx/sy,
+        // поэтому приближение не требует отдельного кода нигде больше.
+        if (followId && tracked.has(followId) && camera.zoom > 1.4) {
+          const f = tracked.get(followId);
+          camera.x += (f.toX - camera.x) * 0.08;
+          camera.y += (f.toY - camera.y) * 0.08;
+        }
+        clampCamera();
+
+        const fit = Math.min(rect.width / world.width, rect.height / world.height) * dpr;
+        const scale = fit * camera.zoom;
+        const ox = canvas.width / 2 - camera.x * scale;
+        const oy = canvas.height / 2 - camera.y * scale;
         const sx = (x) => ox + x * scale;
         const sy = (y) => oy + y * scale;
         lastTransform = { ox, oy, scale, dpr };
         const now = performance.now();
 
+        // Человечков в лицо видно только вблизи: издали это была бы каша из
+        // ног и касок, да и рисовать две сотни фигурок каждый кадр незачем.
+        // Порог в 3.2 — это примерно 10 пикселей роста: меньше уже не человек,
+        // а пятно, и тогда честнее показать точку.
+        const personPx = (scale * 0.6) / dpr;
+        const detailed = personPx >= 3.2;
+
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Пол предприятия.
+        // Пол предприятия. Заливаем только видимую часть: при приближении
+        // прямоугольник мира в несколько раз больше экрана, а мягкое
+        // наложение текстуры по всей его площади — самая дорогая операция кадра.
+        const floorX = Math.max(ox, 0);
+        const floorY = Math.max(oy, 0);
+        const floorW = Math.min(ox + world.width * scale, canvas.width) - floorX;
+        const floorH = Math.min(oy + world.height * scale, canvas.height) - floorY;
         ctx.fillStyle = "#0e1318";
-        ctx.fillRect(ox, oy, world.width * scale, world.height * scale);
+        ctx.fillRect(floorX, floorY, floorW, floorH);
         if (floorPattern) {
           ctx.save();
           ctx.globalAlpha = 0.3;
           ctx.globalCompositeOperation = "soft-light";
           ctx.fillStyle = floorPattern;
-          ctx.fillRect(ox, oy, world.width * scale, world.height * scale);
+          ctx.fillRect(floorX, floorY, floorW, floorH);
           ctx.restore();
         }
 
@@ -1426,6 +1747,18 @@
           ctx.strokeStyle = "rgba(160, 200, 230, 0.16)";
           ctx.lineWidth = dpr;
           ctx.stroke();
+
+          // Вблизи станок — не просто плита: пара полос делает его станком.
+          if (detailed && o.shape === "rect") {
+            ctx.strokeStyle = "rgba(160, 200, 230, 0.10)";
+            ctx.beginPath();
+            for (let k = 1; k < 4; k++) {
+              const lx = sx(o.x + (o.width * k) / 4);
+              ctx.moveTo(lx, sy(o.y) + 2 * dpr);
+              ctx.lineTo(lx, sy(o.y + o.height) - 2 * dpr);
+            }
+            ctx.stroke();
+          }
         }
 
         // Задачи — маленькие бумажки на полу.
@@ -1437,23 +1770,53 @@
         }
         ctx.globalAlpha = 1;
 
-        // Люди: круг — рабочий, квадрат — начальник (форма, а не только цвет).
+        // Люди. Вблизи — человечки, издали — точки: круг рабочий, квадрат
+        // начальник (форма, а не только цвет — так их различает и дальтоник).
+        // Рисуем сверху вниз, чтобы ближние фигурки перекрывали дальних.
         const progress = Math.min((now - tweenStart) / TWEEN_MS, 1);
-        for (const [id, a] of tracked) {
-          const x = sx(a.fromX + (a.toX - a.fromX) * progress);
-          const y = sy(a.fromY + (a.toY - a.fromY) * progress);
+        const people = [...tracked.entries()]
+          .map(([id, a]) => [id, a, a.fromY + (a.toY - a.fromY) * progress])
+          .sort((p, q) => p[2] - q[2]);
+
+        for (const [id, a, wy] of people) {
+          const wx = a.fromX + (a.toX - a.fromX) * progress;
+          const x = sx(wx);
+          const y = sy(wy);
           const boss = isBoss(a.type);
-          const full = Math.max(0.15, Math.min(a.energy / (boss ? 200 : 140), 1));
           const r = Math.max(scale * (boss ? 0.82 : 0.6), 2);
 
+          // За экраном при приближении может остаться почти весь цех —
+          // рисовать его незачем.
+          if (x < -r * 4 || y < -r * 6 || x > canvas.width + r * 4 || y > canvas.height + r * 4) {
+            continue;
+          }
+
           if (boss && a.energy < SATIATED_AT) {
+            // Кольцо под ногами: у начальника нет премии, он ищет, с кого спросить.
             ctx.strokeStyle = "rgba(217, 89, 38, 0.45)";
             ctx.lineWidth = Math.max(dpr, scale * 0.12);
             ctx.beginPath();
-            ctx.arc(x, y, r * 2.1, 0, Math.PI * 2);
+            if (detailed) ctx.ellipse(x, y + r * 1.15, r * 1.5, r * 0.5, 0, 0, Math.PI * 2);
+            else ctx.arc(x, y, r * 2.1, 0, Math.PI * 2);
             ctx.stroke();
           }
 
+          if (id === selectedId) {
+            ctx.strokeStyle = "#e9eef2";
+            ctx.lineWidth = Math.max(dpr * 1.5, scale * 0.14);
+            ctx.beginPath();
+            if (detailed) ctx.ellipse(x, y + r * 1.15, r * 1.25, r * 0.42, 0, 0, Math.PI * 2);
+            else ctx.arc(x, y, r * 2.8, 0, Math.PI * 2);
+            ctx.stroke();
+          }
+
+          if (detailed) {
+            const mind = minds.get(id);
+            drawPerson(x, y, r, a, mind ? mind.mood : "routine", now, dpr);
+            continue;
+          }
+
+          const full = Math.max(0.15, Math.min(a.energy / (boss ? 200 : 140), 1));
           ctx.globalAlpha = 0.35 + full * 0.65;
           ctx.fillStyle = boss ? COLORS.boss : COLORS.worker;
           ctx.beginPath();
@@ -1465,21 +1828,13 @@
           }
           ctx.fill();
 
-          // Светлая «каска» по направлению движения — видно, куда человек идёт.
+          // Светлая точка по направлению движения — видно, куда человек идёт.
           ctx.globalAlpha = 0.5 + full * 0.4;
           ctx.fillStyle = boss ? "#ffb896" : "#8ff0c8";
           ctx.beginPath();
           ctx.arc(x + Math.cos(a.angle) * r * 0.55, y + Math.sin(a.angle) * r * 0.55, r * 0.4, 0, Math.PI * 2);
           ctx.fill();
           ctx.globalAlpha = 1;
-
-          if (id === selectedId) {
-            ctx.strokeStyle = "#e9eef2";
-            ctx.lineWidth = Math.max(dpr * 1.5, scale * 0.16);
-            ctx.beginPath();
-            ctx.arc(x, y, r * 2.8, 0, Math.PI * 2);
-            ctx.stroke();
-          }
         }
 
         // Вспышки: пришёл новый человек / кого-то не стало.
@@ -1521,14 +1876,18 @@
           drawBubble(x, y, mind.thought, mind.role, dpr, scale, placed);
         }
 
-        // Виньетка, чтобы край не выглядел обрезанным.
-        const vg = ctx.createRadialGradient(
-          canvas.width / 2, canvas.height / 2, Math.min(canvas.width, canvas.height) * 0.35,
-          canvas.width / 2, canvas.height / 2, Math.max(canvas.width, canvas.height) * 0.75,
-        );
-        vg.addColorStop(0, "rgba(0,0,0,0)");
-        vg.addColorStop(1, "rgba(0,0,0,0.45)");
-        ctx.fillStyle = vg;
+        // Виньетка, чтобы край не выглядел обрезанным. Зависит только от
+        // размера холста, поэтому пересобираем её лишь при его изменении.
+        if (!vignette || vignetteFor !== canvas.width + "x" + canvas.height) {
+          vignette = ctx.createRadialGradient(
+            canvas.width / 2, canvas.height / 2, Math.min(canvas.width, canvas.height) * 0.35,
+            canvas.width / 2, canvas.height / 2, Math.max(canvas.width, canvas.height) * 0.75,
+          );
+          vignette.addColorStop(0, "rgba(0,0,0,0)");
+          vignette.addColorStop(1, "rgba(0,0,0,0.45)");
+          vignetteFor = canvas.width + "x" + canvas.height;
+        }
+        ctx.fillStyle = vignette;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         requestAnimationFrame(draw);
@@ -1694,21 +2053,143 @@
         });
       });
 
-      canvas.addEventListener("click", (e) => {
-        if (!lastTransform) return;
+      /* ---------- приближение, перетаскивание, выбор человека ---------- */
+
+      function worldAt(clientX, clientY) {
         const rect = canvas.getBoundingClientRect();
         const { ox, oy, scale, dpr } = lastTransform;
-        const x = ((e.clientX - rect.left) * dpr - ox) / scale;
-        const y = ((e.clientY - rect.top) * dpr - oy) / scale;
+        return {
+          x: ((clientX - rect.left) * dpr - ox) / scale,
+          y: ((clientY - rect.top) * dpr - oy) / scale,
+        };
+      }
+
+      function updateZoomUI() {
+        const close = camera.zoom > 1.01;
+        el("zoom-hint").hidden = close;
+        // Пока цех виден целиком, страница должна листаться пальцем как обычно;
+        // жесты перехватываем только когда приближено — иначе на телефоне
+        // невозможно прокрутить страницу мимо большой карты.
+        canvas.classList.toggle("grabbing", close);
+        el("follow").hidden = !(close && followId && tracked.has(followId));
+        if (!el("follow").hidden) {
+          const mind = minds.get(followId);
+          el("follow-name").textContent = mind ? mind.name : "выбранным";
+        }
+      }
+
+      function zoomAt(clientX, clientY, factor) {
+        if (!lastTransform) return;
+        const p = worldAt(clientX, clientY);
+        const next = Math.min(Math.max(camera.zoom * factor, 1), MAX_ZOOM);
+        const k = next / camera.zoom;
+        // Точка под пальцем должна остаться на месте, иначе приближение «уезжает».
+        camera.x = p.x - (p.x - camera.x) / k;
+        camera.y = p.y - (p.y - camera.y) / k;
+        camera.zoom = next;
+        if (camera.zoom <= 1.01) followId = null;
+        clampCamera();
+        updateZoomUI();
+      }
+
+      canvas.addEventListener("wheel", (e) => {
+        e.preventDefault();
+        zoomAt(e.clientX, e.clientY, e.deltaY < 0 ? 1.2 : 1 / 1.2);
+      }, { passive: false });
+
+      const pointers = new Map();
+      let dragged = false;
+      let pinchDist = 0;
+      let pinchMid = null;
+      let lastTapAt = 0;
+
+      canvas.addEventListener("pointerdown", (e) => {
+        canvas.setPointerCapture(e.pointerId);
+        pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        dragged = false;
+        if (pointers.size === 2) {
+          const [a, b] = [...pointers.values()];
+          pinchDist = Math.hypot(a.x - b.x, a.y - b.y);
+          pinchMid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+        }
+      });
+
+      canvas.addEventListener("pointermove", (e) => {
+        const prev = pointers.get(e.pointerId);
+        if (!prev || !lastTransform) return;
+        const dx = e.clientX - prev.x;
+        const dy = e.clientY - prev.y;
+        pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+        if (pointers.size === 2) {
+          // Два пальца: щипок приближает, а их общий сдвиг двигает цех.
+          const [a, b] = [...pointers.values()];
+          const d = Math.hypot(a.x - b.x, a.y - b.y);
+          const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+          if (pinchDist > 0 && d > 0) zoomAt(mid.x, mid.y, d / pinchDist);
+          if (pinchMid && lastTransform && camera.zoom > 1.01) {
+            const { scale, dpr } = lastTransform;
+            camera.x -= ((mid.x - pinchMid.x) * dpr) / scale;
+            camera.y -= ((mid.y - pinchMid.y) * dpr) / scale;
+            followId = null;
+            clampCamera();
+          }
+          pinchDist = d;
+          pinchMid = mid;
+          dragged = true;
+          return;
+        }
+
+        // Одним пальцем по карте человек листает страницу, а не двигает цех —
+        // иначе прокрутить страницу мимо карты становится невозможно.
+        // Мышью тащить можно: у мыши есть колесо и отдельная кнопка.
+        if (e.pointerType === "touch") return;
+        if (camera.zoom <= 1.01) return; // на общем виде двигать нечего
+        if (Math.abs(dx) > 2 || Math.abs(dy) > 2) dragged = true;
+        const { scale, dpr } = lastTransform;
+        camera.x -= (dx * dpr) / scale;
+        camera.y -= (dy * dpr) / scale;
+        followId = null; // человек взял камеру в свои руки
+        clampCamera();
+        updateZoomUI();
+      });
+
+      function endPointer(e) {
+        pointers.delete(e.pointerId);
+        if (pointers.size < 2) {
+          pinchDist = 0;
+          pinchMid = null;
+        }
+      }
+      canvas.addEventListener("pointercancel", endPointer);
+      canvas.addEventListener("pointerup", (e) => {
+        endPointer(e);
+        if (dragged) return;
+
+        // Два быстрых нажатия подряд — приблизиться к этому месту.
+        const now = Date.now();
+        if (now - lastTapAt < 320) {
+          lastTapAt = 0;
+          zoomAt(e.clientX, e.clientY, camera.zoom < 3 ? 3 / camera.zoom : 1 / 3);
+          return;
+        }
+        lastTapAt = now;
+        handleTap(e);
+      });
+
+      function handleTap(e) {
+        if (!lastTransform) return;
+        const { x, y } = worldAt(e.clientX, e.clientY);
         if (x < 0 || y < 0 || x > world.width || y > world.height) {
           setStatus("Это за территорией предприятия.", "bad");
           return;
         }
 
         if (tool === "look") {
-          // Берём ближайшего в разумном радиусе: на телефоне палец толстый.
+          // Берём ближайшего в разумном радиусе: на телефоне палец толстый,
+          // а вблизи попасть легче — радиус уменьшается вместе с приближением.
           let best = null;
-          let bestDist = 4;
+          let bestDist = 4 / Math.sqrt(camera.zoom);
           for (const [id, a] of tracked) {
             const d = dist(x, y, a.toX, a.toY);
             if (d < bestDist) {
@@ -1717,7 +2198,9 @@
             }
           }
           selectedId = best;
+          if (best && camera.zoom > 1.4) followId = best;
           renderCard();
+          updateZoomUI();
           const mind = best ? minds.get(best) : null;
           setStatus(
             mind ? mind.name + ": «" + mind.thought + "»" : "Здесь никого нет — нажмите прямо на человечка.",
@@ -1735,6 +2218,24 @@
           act("spawn_agent", { p_type: tool, p_x: x, p_y: y }, () =>
             tool === "predator" ? "Назначен новый начальник" : "Принят на работу");
         }
+      }
+
+      const centerOf = () => {
+        const rect = canvas.getBoundingClientRect();
+        return [rect.left + rect.width / 2, rect.top + rect.height / 2];
+      };
+      el("zoom-in").addEventListener("click", () => zoomAt(...centerOf(), 1.7));
+      el("zoom-out").addEventListener("click", () => zoomAt(...centerOf(), 1 / 1.7));
+      el("zoom-reset").addEventListener("click", () => {
+        camera.zoom = 1;
+        camera.x = world.width / 2;
+        camera.y = world.height / 2;
+        followId = null;
+        updateZoomUI();
+      });
+      el("follow-stop").addEventListener("click", () => {
+        followId = null;
+        updateZoomUI();
       });
 
       el("drought").addEventListener("click", () => {
@@ -1952,6 +2453,21 @@
         await loadMap();
         await refresh();
         think();
+        camera.x = world.width / 2;
+        camera.y = world.height / 2;
+        // На телефоне весь цех помещается в ладонь, и человек в нём — три
+        // пикселя. Узкий экран открываем сразу приближённым к цеху: увидеть
+        // людей важнее, чем забор по краям. Кнопка «Весь цех» рядом.
+        if (canvas.getBoundingClientRect().width < 520) {
+          const shop = zones[0];
+          if (shop) {
+            camera.x = shop.x;
+            camera.y = shop.y;
+          }
+          camera.zoom = 1.9;
+        }
+        clampCamera();
+        updateZoomUI();
         requestAnimationFrame(draw);
 
         await Promise.allSettled([loadHistory(), loadJournal(), loadOrders()]);
