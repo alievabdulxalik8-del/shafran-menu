@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Предприятие №1</title>
+    <title>Магазин №1</title>
     <style>
       :root {
         color-scheme: dark;
@@ -14,13 +14,14 @@
         --text: #e9eef2;
         --text-2: #97a5b0;
         --text-3: #6e7d88;
-        /* Цвет = кто ты на предприятии. Пара проверена на контраст и на то,
-           что её различает человек с дальтонизмом (ΔE 9.4 по деутану). */
-        --worker: #199e70;
-        --boss: #d95926;
-        /* Задача — бумажка на полу, намеренно бесцветная: иначе её путают
-           с рабочим, а зелёного на карте и так хватает. */
-        --task: #aebdc9;
+        /* Цвет = должность. Роли различаются ещё и местом работы, и тем, что
+           носят в руках, — цвет тут не единственный признак. */
+        --in: #199e70;      /* грузчик приёмки */
+        --out: #3f8fd0;     /* грузчик зала */
+        --seller: #a97fd0;  /* продавец */
+        --foreman: #d95926; /* бригадир */
+        --customer: #aebdc9;/* покупатель */
+        --goods: #d7a55c;   /* коробки и товар */
       }
 
       * { box-sizing: border-box; }
@@ -42,73 +43,38 @@
         gap: 18px;
       }
 
-      /* ---------- шапка с картинкой ---------- */
+      /* ---------- шапка ---------- */
 
       .hero {
         position: relative;
         border: 1px solid var(--line);
         border-radius: 18px;
         overflow: hidden;
-        min-height: 190px;
+        min-height: 180px;
         display: flex;
         align-items: flex-end;
         background: #0d1216;
       }
-      .hero-bg {
-        position: absolute;
-        inset: 0;
-        background-position: center 42%;
-        background-size: cover;
-        opacity: 0.62;
-      }
+      .hero-bg { position: absolute; inset: 0; background-position: center 45%; background-size: cover; opacity: 0.6; }
       .hero::after {
         content: "";
         position: absolute;
         inset: 0;
-        background: linear-gradient(180deg, rgba(10,13,16,0.25) 0%, rgba(10,13,16,0.72) 55%, rgba(10,13,16,0.94) 100%);
+        background: linear-gradient(180deg, rgba(10,13,16,0.3) 0%, rgba(10,13,16,0.75) 55%, rgba(10,13,16,0.95) 100%);
       }
       .hero-inner {
-        position: relative;
-        z-index: 1;
-        padding: 20px 18px;
-        display: flex;
-        gap: 16px;
-        align-items: flex-end;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        width: 100%;
+        position: relative; z-index: 1; padding: 20px 18px; width: 100%;
+        display: flex; gap: 16px; align-items: flex-end; justify-content: space-between; flex-wrap: wrap;
       }
-      .hero h1 {
-        margin: 0;
-        font-size: 26px;
-        letter-spacing: -0.015em;
-      }
-      .subtitle {
-        margin: 6px 0 0;
-        color: var(--text-2);
-        font-size: 13.5px;
-        max-width: 62ch;
-      }
+      .hero h1 { margin: 0; font-size: 26px; letter-spacing: -0.015em; }
+      .subtitle { margin: 6px 0 0; color: var(--text-2); font-size: 13.5px; max-width: 64ch; }
 
       .pulse {
-        display: inline-flex;
-        align-items: center;
-        gap: 7px;
-        font-size: 12px;
-        color: var(--text-2);
-        padding: 4px 10px 4px 8px;
-        border: 1px solid var(--line);
-        border-radius: 999px;
-        background: rgba(16, 20, 26, 0.8);
-        white-space: nowrap;
+        display: inline-flex; align-items: center; gap: 7px; font-size: 12px; color: var(--text-2);
+        padding: 4px 10px 4px 8px; border: 1px solid var(--line); border-radius: 999px;
+        background: rgba(16, 20, 26, 0.8); white-space: nowrap;
       }
-      .pulse i {
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        background: var(--worker);
-        animation: beat 3s ease-out infinite;
-      }
+      .pulse i { width: 7px; height: 7px; border-radius: 50%; background: var(--in); animation: beat 3s ease-out infinite; }
       .pulse.stale i { background: #d9a526; animation: none; }
       @keyframes beat {
         0% { box-shadow: 0 0 0 0 rgba(25, 158, 112, 0.5); }
@@ -118,299 +84,125 @@
 
       /* ---------- плитки ---------- */
 
-      .tiles {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
-        gap: 10px;
-      }
-      .tile {
-        background: var(--panel);
-        border: 1px solid var(--line);
-        border-radius: 12px;
-        padding: 10px 12px;
-      }
+      .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 10px; }
+      .tile { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
       .tile .k {
-        color: var(--text-3);
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        display: flex;
-        align-items: center;
-        gap: 6px;
+        color: var(--text-3); font-size: 11px; text-transform: uppercase;
+        letter-spacing: 0.05em; display: flex; align-items: center; gap: 6px;
       }
-      .tile .v {
-        margin-top: 4px;
-        font-size: 22px;
-        font-variant-numeric: tabular-nums;
-      }
+      .tile .v { margin-top: 4px; font-size: 21px; font-variant-numeric: tabular-nums; }
       .tile .v small { font-size: 12px; color: var(--text-3); }
-      .tile .v.mood { font-size: 15px; line-height: 1.35; }
+      .tile .bar { margin-top: 6px; height: 5px; border-radius: 999px; background: #1c242c; overflow: hidden; }
+      .tile .bar i { display: block; height: 100%; border-radius: 999px; background: var(--goods); }
       .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-      .dot.worker { background: var(--worker); }
-      .dot.boss { background: var(--boss); border-radius: 2px; }
 
-      /* ---------- цех ---------- */
+      /* ---------- зал ---------- */
 
-      .stage {
-        position: relative;
-        border-radius: 16px;
-        overflow: hidden;
-        border: 1px solid var(--line);
-        background: var(--panel-2);
-      }
+      .stage { position: relative; border-radius: 16px; overflow: hidden; border: 1px solid var(--line); background: var(--panel-2); }
       canvas#world {
-        display: block;
-        width: 100%;
-        aspect-ratio: 1 / 1;
-        max-height: 74vh;
-        cursor: pointer;
-        /* pan-y оставляет за браузером вертикальную прокрутку страницы:
-           иначе на телефоне палец «залипает» на большой карте и страницу
-           не пролистать. Всё остальное (два пальца) достаётся нам. */
+        display: block; width: 100%; aspect-ratio: 1 / 1; max-height: 74vh; cursor: pointer;
         touch-action: pan-y;
       }
       canvas#world.grabbing { cursor: grab; }
 
-      .zoom {
-        position: absolute;
-        right: 10px;
-        bottom: 10px;
-        display: flex;
-        gap: 6px;
-        z-index: 2;
-      }
+      .zoom { position: absolute; right: 10px; bottom: 10px; display: flex; gap: 6px; z-index: 2; }
       .zoom-btn {
-        width: 34px;
-        height: 34px;
-        border-radius: 9px;
-        border: 1px solid var(--line);
-        background: rgba(12, 16, 21, 0.82);
-        color: var(--text-2);
-        font-size: 17px;
-        line-height: 1;
-        cursor: pointer;
-        font-family: inherit;
+        width: 34px; height: 34px; border-radius: 9px; border: 1px solid var(--line);
+        background: rgba(12, 16, 21, 0.82); color: var(--text-2); font-size: 17px;
+        line-height: 1; cursor: pointer; font-family: inherit;
       }
       .zoom-btn.wide { width: auto; padding: 0 12px; font-size: 12.5px; }
       .zoom-btn:hover { color: var(--text); border-color: #3a4a57; }
 
       .zoom-hint, .follow {
-        position: absolute;
-        left: 12px;
-        margin: 0;
-        font-size: 12px;
-        color: var(--text-2);
-        background: rgba(12, 16, 21, 0.78);
-        border: 1px solid var(--line);
-        border-radius: 999px;
-        padding: 4px 11px;
-        z-index: 2;
+        position: absolute; left: 12px; margin: 0; font-size: 12px; color: var(--text-2);
+        background: rgba(12, 16, 21, 0.78); border: 1px solid var(--line);
+        border-radius: 999px; padding: 4px 11px; z-index: 2;
       }
       .zoom-hint { bottom: 14px; }
       .follow { top: 12px; display: inline-flex; align-items: center; gap: 6px; }
       .follow b { color: #8ff0c8; font-weight: 500; }
-      .follow button {
-        background: transparent; border: none; color: inherit;
-        cursor: pointer; font-size: 14px; line-height: 1; padding: 0 2px;
-      }
+      .follow button { background: transparent; border: none; color: inherit; cursor: pointer; font-size: 14px; padding: 0 2px; }
 
-      .legend {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 14px;
-        color: var(--text-2);
-        font-size: 12.5px;
-        align-items: center;
-      }
+      .legend { display: flex; flex-wrap: wrap; gap: 14px; color: var(--text-2); font-size: 12.5px; align-items: center; }
       .legend span { display: inline-flex; align-items: center; gap: 7px; }
       .swatch { width: 10px; height: 10px; border-radius: 50%; }
-      .swatch.sq { border-radius: 2px; width: 9px; height: 9px; }
-      .swatch.machine { background: #1a222a; border: 1px solid #2e3a44; border-radius: 3px; width: 13px; height: 9px; }
-      .swatch.shop { background: rgba(25, 158, 112, 0.22); border: 1px solid rgba(25,158,112,.45); }
+      .swatch.sq { border-radius: 2px; }
 
       /* ---------- панели ---------- */
 
-      .panel {
-        background: var(--panel);
-        border: 1px solid var(--line);
-        border-radius: 16px;
-        padding: 16px 16px 12px;
-      }
+      .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 16px 16px 12px; }
       .panel h2 { margin: 0; font-size: 14px; font-weight: 600; }
       .panel .hint { margin: 4px 0 10px; color: var(--text-3); font-size: 12px; }
 
-      /* ---------- облака мыслей ---------- */
+      .two { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; }
 
-      .minds {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-        gap: 14px;
-      }
-      .mind-head {
-        display: flex;
-        align-items: baseline;
-        justify-content: space-between;
-        gap: 10px;
-      }
-      .mind-head .count { color: var(--text-3); font-size: 12px; font-variant-numeric: tabular-nums; }
+      /* кто чем занят */
+      .crew { display: flex; flex-direction: column; gap: 10px; margin: 0; }
+      .crew-row { border-left: 3px solid; padding-left: 10px; }
+      .crew-row .who { font-size: 13px; display: flex; justify-content: space-between; gap: 8px; }
+      .crew-row .who b { font-weight: 600; }
+      .crew-row .who span { color: var(--text-3); font-size: 12px; }
+      .crew-row .jobs { margin: 3px 0 0; color: var(--text-2); font-size: 12.5px; line-height: 1.45; }
 
-      .moods { margin: 10px 0 12px; display: flex; flex-direction: column; gap: 5px; }
-      .mood-row {
-        display: grid;
-        grid-template-columns: 18px minmax(86px, auto) 1fr 28px;
-        align-items: center;
-        gap: 8px;
-        font-size: 12.5px;
-        color: var(--text-2);
-      }
-      .mood-row .bar { height: 6px; border-radius: 999px; background: #1c242c; overflow: hidden; }
-      .mood-row .bar i { display: block; height: 100%; border-radius: 999px; }
-      .mood-row .n { text-align: right; color: var(--text-3); font-variant-numeric: tabular-nums; }
+      /* облако мыслей */
+      .cloud { display: flex; flex-wrap: wrap; gap: 8px; align-content: flex-start; min-height: 120px; }
+      .bubble { border-radius: 14px 14px 14px 4px; padding: 8px 11px; border: 1px solid; line-height: 1.32; animation: pop 0.45s ease-out; }
+      .bubble p { margin: 0; color: var(--text); font-size: 13.5px; }
+      .bubble .who { display: block; margin-top: 4px; font-size: 11px; color: var(--text-3); }
+      @keyframes pop { from { opacity: 0; transform: translateY(6px) scale(0.97); } to { opacity: 1; transform: none; } }
 
-      .cloud {
-        position: relative;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        align-content: flex-start;
-        min-height: 168px;
-      }
-      .bubble {
-        border-radius: 14px 14px 14px 4px;
-        padding: 8px 11px;
-        max-width: 100%;
-        border: 1px solid;
-        animation: pop 0.45s ease-out;
-        line-height: 1.32;
-      }
-      .bubble.worker { background: rgba(25, 158, 112, 0.09); border-color: rgba(25, 158, 112, 0.34); }
-      .bubble.boss { background: rgba(217, 89, 38, 0.09); border-color: rgba(217, 89, 38, 0.34); }
-      .bubble p { margin: 0; color: var(--text); }
-      .bubble .who {
-        display: block;
-        margin-top: 4px;
-        font-size: 11px;
-        color: var(--text-3);
-      }
-      .bubble.worker .who b { color: #8ff0c8; font-weight: 500; }
-      .bubble.boss .who b { color: #ffb896; font-weight: 500; }
-      @keyframes pop {
-        from { opacity: 0; transform: translateY(6px) scale(0.97); }
-        to { opacity: 1; transform: none; }
-      }
-
-      /* ---------- личное дело ---------- */
-
-      .card {
-        display: grid;
-        grid-template-columns: auto 1fr;
-        gap: 4px 14px;
-        font-size: 13px;
-        margin: 0;
-      }
+      /* личное дело */
+      .card { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; font-size: 13px; margin: 0; }
       .card dt { color: var(--text-3); }
       .card dd { margin: 0; }
-      .card .quote { color: var(--text); font-style: italic; }
+      .card .quote { font-style: italic; }
       .empty-card { color: var(--text-3); font-size: 13px; margin: 0; }
 
       /* ---------- управление ---------- */
 
-      .tools-row { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; }
+      .tools-row { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
       .tool-group { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
       .tool-label { color: var(--text-3); font-size: 12px; margin-right: 2px; }
 
-      .tool, .danger {
-        background: var(--panel-2);
-        border: 1px solid var(--line);
-        color: var(--text-2);
-        border-radius: 9px;
-        padding: 7px 12px;
-        font-size: 13px;
-        cursor: pointer;
-        transition: border-color 0.12s, color 0.12s, background 0.12s;
+      .tool, .danger, .primary {
+        border-radius: 9px; padding: 7px 12px; font-size: 13px; cursor: pointer;
+        font-family: inherit; transition: border-color 0.12s, color 0.12s, background 0.12s;
       }
-      .tool:hover, .danger:hover { color: var(--text); border-color: #35434f; }
-      .tool[aria-pressed="true"] {
-        color: #0a0d10;
-        background: var(--worker);
-        border-color: var(--worker);
-        font-weight: 600;
-      }
-      .danger { border-color: #4a2a1e; color: #e8a07e; }
-      .danger:hover { background: #2a1610; border-color: var(--boss); color: #ffc7a8; }
+      .tool { background: var(--panel-2); border: 1px solid var(--line); color: var(--text-2); }
+      .tool:hover { color: var(--text); border-color: #35434f; }
+      .tool[aria-pressed="true"] { color: #0a0d10; background: var(--in); border-color: var(--in); font-weight: 600; }
+      .danger { background: var(--panel-2); border: 1px solid #4a2a1e; color: #e8a07e; }
+      .danger:hover { background: #2a1610; border-color: var(--foreman); color: #ffc7a8; }
+      .primary { background: var(--in); border: 1px solid var(--in); color: #0a0d10; font-weight: 600; }
+      .primary:hover { filter: brightness(1.08); }
       button:disabled { opacity: 0.5; cursor: progress; }
 
-      .command-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        align-items: center;
-        margin-top: 14px;
-        padding-top: 14px;
-        border-top: 1px solid var(--line);
+      select, input[type="text"] {
+        background: var(--panel-2); border: 1px solid var(--line); color: var(--text);
+        border-radius: 9px; padding: 8px 10px; font-size: 13px; font-family: inherit;
       }
-      .command-row input[type="text"] {
-        flex: 1 1 320px;
-        min-width: 0;
-        background: var(--panel-2);
-        border: 1px solid var(--line);
-        color: var(--text);
-        border-radius: 9px;
-        padding: 9px 12px;
-        font-size: 13px;
-        font-family: inherit;
-      }
-      .command-row input[type="text"]:focus { outline: none; border-color: #3d4d5a; }
-      .command-row select {
-        background: var(--panel-2);
-        border: 1px solid var(--line);
-        color: var(--text-2);
-        border-radius: 9px;
-        padding: 9px 10px;
-        font-size: 13px;
-        font-family: inherit;
-      }
-      .primary {
-        background: var(--worker);
-        border: 1px solid var(--worker);
-        color: #0a0d10;
-        font-weight: 600;
-        border-radius: 9px;
-        padding: 9px 14px;
-        font-size: 13px;
-        cursor: pointer;
-      }
-      .primary:hover { filter: brightness(1.08); }
+      input[type="text"] { flex: 1 1 300px; min-width: 0; }
+      input[type="text"]:focus { outline: none; border-color: #3d4d5a; }
 
+      .command-row {
+        display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+        margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line);
+      }
       .examples { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 0; padding: 0; list-style: none; }
       .examples button {
-        background: transparent;
-        border: 1px dashed var(--line);
-        color: var(--text-3);
-        border-radius: 999px;
-        padding: 4px 10px;
-        font-size: 12px;
-        font-family: inherit;
-        cursor: pointer;
+        background: transparent; border: 1px dashed var(--line); color: var(--text-3);
+        border-radius: 999px; padding: 4px 10px; font-size: 12px; font-family: inherit; cursor: pointer;
       }
       .examples button:hover { color: var(--text-2); border-color: #3d4d5a; }
 
       .orders { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 0; padding: 0; list-style: none; }
       .orders li {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        border-radius: 999px;
-        padding: 5px 6px 5px 12px;
-        font-size: 12.5px;
-        border: 1px solid;
+        display: inline-flex; align-items: center; gap: 8px; border-radius: 999px;
+        padding: 5px 6px 5px 12px; font-size: 12.5px;
+        border: 1px solid rgba(63,143,208,.5); color: #a9d4f5; background: rgba(63,143,208,.1);
       }
-      .orders li.worker { border-color: rgba(25,158,112,.5); color: #8ff0c8; background: rgba(25,158,112,.1); }
-      .orders li.boss { border-color: rgba(217,89,38,.5); color: #ffb896; background: rgba(217,89,38,.1); }
-      .orders li button {
-        background: transparent; border: none; color: inherit; opacity: 0.7;
-        cursor: pointer; font-size: 14px; line-height: 1; padding: 2px 6px;
-      }
+      .orders li button { background: transparent; border: none; color: inherit; opacity: .7; cursor: pointer; font-size: 14px; padding: 2px 6px; }
       .orders li button:hover { opacity: 1; }
 
       .status { margin: 12px 0 0; font-size: 13px; color: var(--text-2); min-height: 18px; }
@@ -418,9 +210,8 @@
       .status.good { color: #8ff0c8; }
 
       .journal {
-        list-style: none; margin: 10px 0 4px; padding: 0;
-        display: flex; flex-wrap: wrap; gap: 6px 10px;
-        font-size: 12px; color: var(--text-3);
+        list-style: none; margin: 10px 0 4px; padding: 0; display: flex; flex-wrap: wrap;
+        gap: 6px 10px; font-size: 12px; color: var(--text-3);
       }
       .journal li { background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; }
       .journal li b { color: var(--text-2); font-weight: 500; }
@@ -430,10 +221,7 @@
       .chart-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
       .chart-legend { display: flex; gap: 14px; font-size: 12.5px; color: var(--text-2); }
       .chart-legend span { display: inline-flex; align-items: center; gap: 7px; }
-      .toggle {
-        background: transparent; border: 1px solid var(--line); color: var(--text-2);
-        border-radius: 8px; padding: 5px 10px; font-size: 12px; cursor: pointer;
-      }
+      .toggle { background: transparent; border: 1px solid var(--line); color: var(--text-2); border-radius: 8px; padding: 5px 10px; font-size: 12px; cursor: pointer; }
       .toggle:hover { color: var(--text); border-color: #35434f; }
 
       svg#chart { display: block; width: 100%; height: 240px; }
@@ -444,24 +232,20 @@
       svg#chart .crosshair { stroke: #3b4a56; stroke-width: 1; stroke-dasharray: 3 3; }
 
       .tooltip {
-        position: absolute; pointer-events: none;
-        background: #0c1116; border: 1px solid var(--line); border-radius: 8px;
-        padding: 7px 9px; font-size: 12px; color: var(--text);
-        white-space: nowrap; opacity: 0; transition: opacity 0.12s; z-index: 3;
+        position: absolute; pointer-events: none; background: #0c1116; border: 1px solid var(--line);
+        border-radius: 8px; padding: 7px 9px; font-size: 12px; color: var(--text);
+        white-space: nowrap; opacity: 0; transition: opacity .12s; z-index: 3;
       }
       .chart-wrap { position: relative; }
 
-      table.data {
-        width: 100%; border-collapse: collapse; font-size: 12.5px;
-        font-variant-numeric: tabular-nums; margin-bottom: 12px;
-      }
+      table.data { width: 100%; border-collapse: collapse; font-size: 12.5px; font-variant-numeric: tabular-nums; margin-bottom: 12px; }
       table.data th, table.data td { text-align: right; padding: 5px 8px; border-bottom: 1px solid var(--line); }
       table.data th:first-child, table.data td:first-child { text-align: left; color: var(--text-2); }
       table.data th { color: var(--text-3); font-weight: 500; }
       [hidden] { display: none !important; }
 
       .error { margin: 0; padding: 10px 12px; border-radius: 10px; background: #3a1b1b; color: #ffb4b4; font-size: 13px; }
-      .foot { color: var(--text-3); font-size: 12px; line-height: 1.5; }
+      .foot { color: var(--text-3); font-size: 12px; line-height: 1.55; }
       .foot b { color: var(--text-2); font-weight: 500; }
 
       @media (max-width: 560px) {
@@ -477,11 +261,12 @@
         <div class="hero-bg" id="hero-bg"></div>
         <div class="hero-inner">
           <div>
-            <h1>Предприятие №1</h1>
+            <h1>Магазин №1</h1>
             <p class="subtitle">
-              Смена идёт круглосуточно на сервере. Рабочие берут задачи, начальники
-              ходят по цеху и ищут, с кого спросить. У каждого есть силы, настроение
-              и мысль — нажмите на человечка, чтобы прочитать его личное дело.
+              Смена идёт круглосуточно на сервере. Фура привозит товар на приёмку,
+              грузчики относят его на склад, вторая бригада выкладывает на полки,
+              покупатели разбирают и идут на кассу. Бригадиры следят, чтобы никто
+              не стоял без дела.
             </p>
           </div>
           <div class="pulse" id="pulse"><i></i><span id="pulse-text">подключаюсь…</span></div>
@@ -492,40 +277,50 @@
 
       <div class="tiles">
         <div class="tile">
-          <div class="k"><span class="dot worker"></span>Рабочие</div>
-          <div class="v" id="worker-count">—</div>
+          <div class="k">Продано за смену</div>
+          <div class="v" id="sold">—</div>
+          <div class="v" style="font-size:13px;color:var(--text-3)" id="revenue">—</div>
         </div>
         <div class="tile">
-          <div class="k"><span class="dot boss"></span>Начальники</div>
-          <div class="v" id="boss-count">—</div>
+          <div class="k">На полках</div>
+          <div class="v" id="shelves">—</div>
+          <div class="bar"><i id="shelves-bar" style="width:0%"></i></div>
         </div>
         <div class="tile">
-          <div class="k">Задачи в цеху</div>
-          <div class="v" id="task-count">—</div>
+          <div class="k">На складе</div>
+          <div class="v" id="warehouse">—</div>
+          <div class="bar"><i id="warehouse-bar" style="width:0%"></i></div>
         </div>
         <div class="tile">
-          <div class="k">Настроение цеха</div>
-          <div class="v mood" id="shop-mood">—</div>
+          <div class="k">На приёмке</div>
+          <div class="v" id="dock">—</div>
+          <div class="bar"><i id="dock-bar" style="width:0%"></i></div>
         </div>
         <div class="tile">
-          <div class="k">Поколение</div>
-          <div class="v" id="generation">—</div>
+          <div class="k">Очередь на кассе</div>
+          <div class="v" id="queue">—</div>
         </div>
         <div class="tile">
-          <div class="k">Тик</div>
-          <div class="v" id="tick">—</div>
+          <div class="k">Покупатели в зале</div>
+          <div class="v" id="customers">—</div>
+        </div>
+        <div class="tile">
+          <div class="k">Ушли без покупки</div>
+          <div class="v" id="lost">—</div>
+        </div>
+        <div class="tile">
+          <div class="k">Сотрудников</div>
+          <div class="v" id="staff">—</div>
         </div>
       </div>
 
       <div class="stage">
         <canvas id="world"></canvas>
-        <p class="zoom-hint" id="zoom-hint">
-          Приблизьте — и человечков станет видно в лицо
-        </p>
+        <p class="zoom-hint" id="zoom-hint">Приблизьте — станет видно, кто что несёт</p>
         <div class="zoom">
           <button class="zoom-btn" type="button" id="zoom-out" aria-label="Отдалить">−</button>
           <button class="zoom-btn" type="button" id="zoom-in" aria-label="Приблизить">+</button>
-          <button class="zoom-btn wide" type="button" id="zoom-reset">Весь цех</button>
+          <button class="zoom-btn wide" type="button" id="zoom-reset">Весь магазин</button>
         </div>
         <p class="follow" id="follow" hidden>
           иду за: <b id="follow-name">—</b>
@@ -534,166 +329,190 @@
       </div>
 
       <div class="legend">
-        <span><i class="swatch" style="background:var(--worker)"></i>рабочий</span>
-        <span><i class="swatch sq" style="background:var(--boss)"></i>начальник (кольцо — ищет, с кого спросить)</span>
-        <span><i class="swatch sq" style="background:var(--task)"></i>задача</span>
-        <span><i class="swatch machine"></i>станок</span>
-        <span><i class="swatch shop"></i>цех: за станками начальник почти не видит</span>
-        <span>яркость — сколько в человеке сил</span>
-        <span>приблизьте колесом, двумя пальцами или двойным нажатием — увидите лица</span>
+        <span><i class="swatch" style="background:var(--in)"></i>грузчик приёмки</span>
+        <span><i class="swatch" style="background:var(--out)"></i>грузчик зала</span>
+        <span><i class="swatch" style="background:var(--seller)"></i>продавец</span>
+        <span><i class="swatch" style="background:var(--foreman)"></i>бригадир</span>
+        <span><i class="swatch" style="background:var(--customer)"></i>покупатель</span>
+        <span><i class="swatch sq" style="background:var(--goods)"></i>коробки и товар</span>
       </div>
 
-      <div class="minds">
+      <div class="two">
         <section class="panel">
-          <div class="mind-head">
-            <h2>О чём думают рабочие</h2>
-            <span class="count" id="worker-thinking">—</span>
-          </div>
-          <p class="hint">Мысль зависит от того, что с человеком происходит прямо сейчас.</p>
-          <div class="moods" id="worker-moods"></div>
-          <div class="cloud" id="worker-cloud"></div>
+          <h2>Кто чем занят прямо сейчас</h2>
+          <p class="hint">Это не описание, а живые данные: занятие каждого человека приходит с сервера.</p>
+          <div class="crew" id="crew"></div>
         </section>
 
         <section class="panel">
-          <div class="mind-head">
-            <h2>О чём думают начальники</h2>
-            <span class="count" id="boss-thinking">—</span>
-          </div>
-          <p class="hint">Те же правила, только другая сторона цеха.</p>
-          <div class="moods" id="boss-moods"></div>
-          <div class="cloud" id="boss-cloud"></div>
+          <h2>О чём они думают</h2>
+          <p class="hint">Мысль зависит от работы, сил и нервов — и меняется вместе с ними.</p>
+          <div class="cloud" id="cloud"></div>
         </section>
       </div>
 
       <section class="panel">
         <h2>Личное дело</h2>
-        <p class="hint">Нажмите на любого человечка в цеху.</p>
+        <p class="hint">Нажмите на любого человечка в магазине.</p>
         <p class="empty-card" id="card-empty">Пока никто не выбран.</p>
         <dl class="card" id="card" hidden></dl>
       </section>
 
       <section class="panel">
         <div class="tools-row">
-          <div class="tool-group" role="group" aria-label="Что делает нажатие на цех">
-            <span class="tool-label">Нажатие на цех:</span>
+          <div class="tool-group" role="group" aria-label="Что делает нажатие на зал">
+            <span class="tool-label">Нажатие:</span>
             <button class="tool" type="button" data-tool="look" aria-pressed="true">Кто это?</button>
-            <button class="tool" type="button" data-tool="feed" aria-pressed="false">Подкинуть задач</button>
-            <button class="tool" type="button" data-tool="herbivore" aria-pressed="false">Нанять рабочего</button>
-            <button class="tool" type="button" data-tool="predator" aria-pressed="false">Поставить начальника</button>
-            <button class="tool" type="button" data-tool="obstacle" aria-pressed="false">Станок</button>
           </div>
           <div class="tool-group">
-            <span class="tool-label">Беда:</span>
-            <button class="danger" type="button" id="drought">Срыв поставок</button>
-            <button class="danger" type="button" id="plague">Сокращение</button>
+            <button class="tool" type="button" id="truck">Вызвать фуру</button>
+            <button class="tool" type="button" id="doors">Пустить покупателей</button>
+          </div>
+          <div class="tool-group">
+            <span class="tool-label">Штат:</span>
+            <select id="role" aria-label="Должность">
+              <option value="carrier_in">грузчик приёмки</option>
+              <option value="carrier_out">грузчик зала</option>
+              <option value="seller">продавец</option>
+              <option value="foreman">бригадир</option>
+            </select>
+            <button class="tool" type="button" id="hire">Нанять</button>
+            <button class="danger" type="button" id="fire">Уволить</button>
           </div>
         </div>
 
+        <div class="tools-row" style="margin-top:12px">
+          <span class="tool-label">Распоряжение всем:</span>
+          <button class="tool" type="button" data-order="unload">Все на разгрузку</button>
+          <button class="tool" type="button" data-order="shelves">Все на полки</button>
+          <button class="tool" type="button" data-order="break">Перерыв</button>
+          <button class="tool" type="button" data-order="rush">Работать без перерыва</button>
+          <button class="tool" type="button" data-order="easy">Бригадиры, отстаньте</button>
+          <button class="tool" type="button" data-order="cancel">Отбой</button>
+        </div>
+
         <div class="command-row">
-          <select id="species" aria-label="Кому отдать распоряжение">
-            <option value="herbivore">Рабочим</option>
-            <option value="predator">Начальникам</option>
-          </select>
           <input
             type="text"
             id="command"
             maxlength="200"
-            placeholder="Например: обступите одного начальника и выживите его"
-            aria-label="Распоряжение"
+            placeholder="Или словами: «все на полки», «перерыв», «работаем без перерыва»"
+            aria-label="Распоряжение словами"
           />
           <button class="primary" type="button" id="send">Сказать</button>
         </div>
 
         <ul class="examples" id="examples">
-          <li><button type="button" data-species="herbivore">бастуйте: обступите одного начальника и выживите его</button></li>
-          <li><button type="button" data-species="herbivore">прячьтесь за станки</button></li>
-          <li><button type="button" data-species="herbivore">все на планёрку в центр цеха</button></li>
-          <li><button type="button" data-species="herbivore">перекур</button></li>
-          <li><button type="button" data-species="predator">тотальный контроль, проверяйте всех</button></li>
-          <li><button type="button" data-species="herbivore">отбой, работаем как обычно</button></li>
+          <li><button type="button">разгружайте фуру, приёмка забита</button></li>
+          <li><button type="button">все на полки, зал пустой</button></li>
+          <li><button type="button">перерыв, все на кухню</button></li>
+          <li><button type="button">работаем без перерыва</button></li>
+          <li><button type="button">бригадиры, отстаньте от людей</button></li>
+          <li><button type="button">отбой, работаем как обычно</button></li>
         </ul>
 
         <ul class="orders" id="orders"></ul>
-        <p class="status" id="status">Выберите, что делает нажатие на цех, — или скажите людям что-нибудь словами.</p>
+        <p class="status" id="status">Нажмите на человечка — покажу, кто это и что он делает.</p>
         <ul class="journal" id="journal"></ul>
       </section>
 
       <section class="panel">
         <div class="chart-head">
           <div>
-            <h2>Рабочие и начальники во времени</h2>
-            <p class="hint">Снимок штата каждые 20 тиков — примерно раз в минуту.</p>
+            <h2>Товар и продажи во времени</h2>
+            <p class="hint">Снимок каждые 20 тиков — примерно раз в минуту.</p>
           </div>
           <div style="display:flex; gap:12px; align-items:center">
             <div class="chart-legend">
-              <span><i class="swatch" style="background:var(--worker)"></i>рабочие</span>
-              <span><i class="swatch sq" style="background:var(--boss)"></i>начальники</span>
+              <span><i class="swatch sq" style="background:var(--goods)"></i>на полках</span>
+              <span><i class="swatch" style="background:var(--in)"></i>продано за минуту</span>
+              <span><i class="swatch" style="background:var(--foreman)"></i>очередь</span>
             </div>
             <button class="toggle" id="table-toggle" type="button">Таблица</button>
           </div>
         </div>
 
         <div class="chart-wrap">
-          <svg id="chart" role="img" aria-label="График численности рабочих и начальников по времени"></svg>
+          <svg id="chart" role="img" aria-label="График остатка на полках, продаж и очереди"></svg>
           <div class="tooltip" id="tooltip"></div>
         </div>
 
         <table class="data" id="table" hidden>
           <thead>
-            <tr><th>Время</th><th>Рабочие</th><th>Начальники</th><th>Задачи</th></tr>
+            <tr><th>Время</th><th>Полки</th><th>Склад</th><th>Продано</th><th>Очередь</th></tr>
           </thead>
           <tbody></tbody>
         </table>
       </section>
 
       <p class="foot">
-        <b>Как здесь всё устроено.</b> Рабочий живёт, пока берёт задачи: каждая даёт ему силы.
-        Начальник сам задач не берёт — он кормится с рабочих: догнал, спросил, забрал выработку,
-        и человека на предприятии больше нет. Чем больше начальников в одном месте, тем дороже
-        каждому из них: они мешают друг другу и делят одну премию. Сытый начальник уходит
-        к себе и никого не трогает. За станками в цеху рабочего почти не видно — поэтому
-        цех и не пустеет. Линии на графике должны колебаться, а не замирать: это и есть жизнь.
+        <b>Как это работает.</b> Раз в минуту к приёмке подъезжает фура и оставляет 12 коробок.
+        Грузчики приёмки возят их на склад тележкой по шесть штук, грузчики зала берут товар
+        со склада и выкладывают на полки, покупатели заходят через вход, набирают товар
+        и встают в очередь к кассе, продавец оформляет покупку. У каждого есть силы: они
+        тратятся на работу и восстанавливаются на кухне; нервы снимаются в комнате отдыха.
+        Бригадир поднимает тех, кто отдыхает, имея силы работать, — и добавляет им нервов.
+        Если грузчиков мало, полки пустеют и покупатели уходят ни с чем; если мало продавцов,
+        растёт очередь. Числа на плитках — это и есть результат их работы.
       </p>
     </div>
 
     <!--
       Никаких внешних библиотек: страница должна открываться двойным кликом с
-      диска и работать на телефоне. Раньше здесь подключался supabase-js с CDN,
-      и если он не загружался, скрипт падал на первой строке, а страница молча
-      застывала на «подключаюсь…». Теперь это обычные запросы через fetch.
-
-      Мысли и настроения считает браузер, а не сервер: они полностью выводятся
-      из того, что и так видно (силы, кто рядом, есть ли задача, какой приказ).
-      Это честно — человечек думает о том, что с ним происходит, — и не стоит
-      ни одного лишнего запроса к базе.
+      диска и работать на телефоне. Симуляция целиком на сервере; здесь только
+      чтение, рисование и мысли, которые выводятся из уже прочитанного.
     -->
     <script>
-      // Анонимный ключ публичен по назначению: RLS разрешает только чтение мира.
+      // Анонимный ключ публичен по назначению: RLS разрешает только чтение.
       const SUPABASE_URL = "https://vdywvbioyunhhhvujowv.supabase.co";
       const SUPABASE_ANON_KEY =
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZkeXd2YmlveXVuaGhodnVqb3d2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk4NDUwMzQsImV4cCI6MjEwNTQyMTAzNH0.CVX4_RotQnSJDXFwak_5I6_sPY-07y7l1TpkTAUTKEQ";
 
-      // Картинки нарисованы в Higgsfield. Если CDN не ответит, страница
-      // просто останется тёмной — ни одна из них не обязательна.
       const HERO_IMAGE =
         "https://d8j0ntlcm91z4.cloudfront.net/user_38hVkwfIcxKuFfa4iWUIfoCmgDn/hf_20260920_181009_34ff1f3d-47fb-42b5-acdc-29b4b0139e7b.png";
       const FLOOR_TEXTURE =
         "https://d8j0ntlcm91z4.cloudfront.net/user_38hVkwfIcxKuFfa4iWUIfoCmgDn/hf_20260920_181124_725b9c98-a958-4dd4-b71a-7c144eed3136.png";
 
-      const FALLBACK_POLL_MS = 3000;
+      const POLL_MS = 3000;
       const TWEEN_MS = 2600;
-      const HISTORY_POINTS = 180;
-      const SATIATED_AT = 150; // как в simulation.ts: выше — начальник сыт
-      const MAX_ENERGY = { worker: 160, boss: 260 };
+      const HISTORY_POINTS = 120;
+      const REQUEST_TIMEOUT_MS = 12000;
 
       const COLORS = {
-        worker: "#199e70",
-        boss: "#d95926",
-        task: "#aebdc9",
-        machine: "#1a222a",
+        carrier_in: "#199e70",
+        carrier_out: "#3f8fd0",
+        seller: "#a97fd0",
+        foreman: "#d95926",
+        customer: "#aebdc9",
+        goods: "#d7a55c",
       };
 
-      const REQUEST_TIMEOUT_MS = 12000;
+      const ROLE_NAME = {
+        carrier_in: "грузчик приёмки",
+        carrier_out: "грузчик зала",
+        seller: "продавец",
+        foreman: "бригадир",
+        customer: "покупатель",
+      };
+
+      const CREW_NAME = {
+        carrier_in: "Грузчики приёмки",
+        carrier_out: "Грузчики зала",
+        seller: "Продавцы",
+        foreman: "Бригадиры",
+        customer: "Покупатели",
+      };
+
+      const STATION_NAME = {
+        dock: "ПРИЁМКА",
+        warehouse: "СКЛАД",
+        shelf: "ПОЛКА",
+        checkout: "КАССА",
+        kitchen: "КУХНЯ",
+        rest: "ОТДЫХ",
+        entrance: "ВХОД",
+        office: "КАБИНЕТ",
+      };
 
       /* ---------- минимальный клиент вместо библиотеки ---------- */
 
@@ -711,7 +530,6 @@
               ...(options.headers ?? {}),
             },
           });
-
           const text = await response.text();
           const body = text ? JSON.parse(text) : null;
           if (!response.ok) {
@@ -730,23 +548,14 @@
       const select = (table, query = "") => request("/rest/v1/" + table + (query ? "?" + query : ""));
       const rpc = (fn, args) =>
         request("/rest/v1/rpc/" + fn, { method: "POST", body: JSON.stringify(args ?? {}) });
-      const invoke = (fn, body) =>
-        request("/functions/v1/" + fn, { method: "POST", body: JSON.stringify(body ?? {}) });
 
       const el = (id) => document.getElementById(id);
       const canvas = el("world");
       const ctx = canvas.getContext("2d");
 
-      // В базе виды по-прежнему называются herbivore/predator — мир живёт
-      // без остановки с первого дня, и переименовывать строки на ходу значило
-      // бы ронять смену. Наружу всюду рабочие и начальники.
-      const isBoss = (type) => type === "predator" || type === "boss";
-      const roleOf = (type) => (isBoss(type) ? "boss" : "worker");
-
-      let world = { width: 100, height: 100, tick_count: null, last_tick_at: null };
-      let tasks = [];
-      let machines = [];
-      let zones = [];
+      let shop = { width: 100, height: 100, tick_count: null, last_tick_at: null,
+                   sold_units: 0, revenue: 0, lost_customers: 0, trucks: 0 };
+      let stations = [];
       let history = [];
       let tracked = new Map();
       let flashes = [];
@@ -754,22 +563,20 @@
       let inFlight = false;
       let firstFrame = true;
       let lastTransform = null;
-      let tool = "look";
       let selectedId = null;
+      let orders = [];
 
-      // Камера цеха: zoom = 1 — виден весь цех целиком, дальше — приближение.
-      // Без приближения человечков не разглядеть: в целом цеху на каждого
-      // приходится несколько пикселей.
+      // Камера: zoom = 1 — виден весь магазин.
       const camera = { x: 50, y: 50, zoom: 1 };
       const MAX_ZOOM = 9;
-      let followId = null; // за кем идёт камера
+      let followId = null;
 
       function clampCamera() {
         camera.zoom = Math.min(Math.max(camera.zoom, 1), MAX_ZOOM);
-        const halfW = world.width / (2 * camera.zoom);
-        const halfH = world.height / (2 * camera.zoom);
-        camera.x = Math.min(Math.max(camera.x, halfW), world.width - halfW);
-        camera.y = Math.min(Math.max(camera.y, halfH), world.height - halfH);
+        const halfW = shop.width / (2 * camera.zoom);
+        const halfH = shop.height / (2 * camera.zoom);
+        camera.x = Math.min(Math.max(camera.x, halfW), shop.width - halfW);
+        camera.y = Math.min(Math.max(camera.y, halfH), shop.height - halfH);
       }
 
       el("hero-bg").style.backgroundImage = "url('" + HERO_IMAGE + "')";
@@ -777,15 +584,9 @@
       const floor = new Image();
       floor.crossOrigin = "anonymous";
       let floorPattern = null;
-      floor.onload = () => {
-        floorPattern = ctx.createPattern(floor, "repeat");
-      };
+      floor.onload = () => { floorPattern = ctx.createPattern(floor, "repeat"); };
       floor.src = FLOOR_TEXTURE;
 
-      const avg = (xs) => (xs.length ? xs.reduce((s, v) => s + v, 0) / xs.length : 0);
-
-      // Одно и то же id всегда даёт одно и то же число: имя человека не должно
-      // меняться от того, что страницу обновили.
       function hash(str) {
         let h = 2166136261;
         for (let i = 0; i < str.length; i++) {
@@ -795,437 +596,215 @@
         return h >>> 0;
       }
       const pick = (list, seed) => list[seed % list.length];
-
-      /* ================= мысли, настроения, имена ================= */
-
-      // Мужские и женские имена лежат отдельно вместе со своими фамилиями:
-      // «Инна Сухов» сразу выдаёт, что имя собрано машиной, и живым человек
-      // после этого быть перестаёт.
-      const NAMES = {
-        worker: [
-          {
-            first: ["Игорь", "Витя", "Серёжа", "Гена", "Костя", "Паша", "Толя", "Миша",
-                    "Юра", "Боря", "Лёня", "Слава", "Рома", "Дима", "Валера", "Саня"],
-            last: ["Сомов", "Пряхин", "Гусев", "Лапин", "Бубнов", "Чайкин", "Дроздов",
-                   "Зуев", "Лужин", "Ёлкин", "Мухин", "Рябов", "Сухов", "Пименов", "Ким", "Куц"],
-          },
-          {
-            first: ["Люда", "Тамара", "Оля", "Нина", "Рая", "Зоя", "Вера", "Галя",
-                    "Света", "Марина", "Катя", "Даша", "Алла", "Инна", "Валя", "Тоня"],
-            last: ["Сомова", "Пряхина", "Гусева", "Лапина", "Бубнова", "Чайкина", "Дроздова",
-                   "Зуева", "Лужина", "Ёлкина", "Мухина", "Рябова", "Сухова", "Пименова", "Ким", "Куц"],
-          },
-        ],
-        // Начальника зовут по имени-отчеству. Имя и отчество берутся
-        // независимо: шести готовых пар на два десятка начальников не хватает,
-        // и цех начинает выглядеть как склад однофамильцев.
-        boss: [
-          {
-            first: ["Виктор", "Аркадий", "Эдуард", "Геннадий", "Валерий", "Анатолий",
-                    "Леонид", "Станислав"],
-            last: ["Палыч", "Львович", "Сергеич", "Борисыч", "Иваныч", "Степаныч",
-                   "Юрьевич", "Михалыч"],
-          },
-          {
-            first: ["Нина", "Тамара", "Роза", "Алла", "Лариса", "Зинаида", "Галина", "Вера"],
-            last: ["Петровна", "Ильинична", "Марковна", "Викторовна", "Егоровна",
-                   "Павловна", "Аркадьевна", "Тимофеевна"],
-          },
-        ],
-      };
-
-      function nameOf(id, role) {
-        const h = hash(id);
-        const set = NAMES[role][h % 2];
-        const first = pick(set.first, h >>> 3);
-        const last = pick(set.last, h >>> 11);
-        return last ? first + " " + last : first;
-      }
-
-      // Настроение — не случайность, а прямой вывод из положения дел.
-      // Порядок важен: первое подходящее правило и выигрывает.
-      const MOODS = {
-        worker: {
-          fear:      { label: "страх",       icon: "😨", color: "#d95926" },
-          rage:      { label: "ярость",      icon: "😤", color: "#e0752c" },
-          alarm:     { label: "тревога",     icon: "😟", color: "#d9a526" },
-          burnout:   { label: "изнеможение", icon: "🫠", color: "#b06a3b" },
-          calm:      { label: "покой",       icon: "😌", color: "#4fa5c4" },
-          focus:     { label: "сосредоточен",icon: "🙂", color: "#199e70" },
-          content:   { label: "доволен",     icon: "😊", color: "#3fbf88" },
-          boredom:   { label: "скука",       icon: "😐", color: "#6e7d88" },
-          tired:     { label: "усталость",   icon: "😮‍💨", color: "#8a9aa6" },
-        },
-        boss: {
-          wrath:     { label: "гнев",         icon: "😠", color: "#d95926" },
-          smug:      { label: "самодовольство", icon: "😎", color: "#e0a02c" },
-          panic:     { label: "паника",       icon: "😰", color: "#c4553f" },
-          envy:      { label: "зависть",      icon: "🙄", color: "#a76fbf" },
-          chase:     { label: "азарт погони", icon: "🧐", color: "#e07a3c" },
-          annoyance: { label: "раздражение",  icon: "😒", color: "#9a7b5a" },
-          routine:   { label: "рутина",       icon: "🫥", color: "#7d8b96" },
-        },
-      };
-
-      const THOUGHTS = {
-        fear: [
-          "Только не ко мне. Только не ко мне.",
-          "Иду мимо. Я очень занят, вы же видите.",
-          "За станком он меня не разглядит.",
-          "Почему он всегда подходит именно ко мне?",
-          "Сделаю вид, что уже всё сдал.",
-          "Не поднимать голову. Не поднимать голову.",
-        ],
-        rage: [
-          "Хватит. Сегодня — хватит.",
-          "Нас много, он один.",
-          "Мне уже нечего терять.",
-          "Пусть теперь он побегает.",
-          "Я всё это помню. Всё до мелочи.",
-          "Если не сейчас, то никогда.",
-        ],
-        alarm: [
-          "Куда все побежали? Я тоже побегу.",
-          "Главное — оказаться подальше.",
-          "Что-то случилось, а мне опять не сказали.",
-          "Пережду вон там, в углу.",
-        ],
-        burnout: [
-          "Ещё немного — и я просто лягу здесь.",
-          "Сил нет даже думать.",
-          "Мне бы до конца смены дожить.",
-          "Я уже не работаю. Я догораю.",
-          "Когда я в последний раз ел?",
-        ],
-        calm: [
-          "Пять минут. Всего пять минут.",
-          "Стою и никому ничего не должен.",
-          "Тишина. Даже странно.",
-          "Вот так бы и всю смену.",
-        ],
-        focus: [
-          "Вот эту доделаю — и хорошо.",
-          "Успею до перерыва.",
-          "Руки сами помнят.",
-          "Неплохо получается, между прочим.",
-        ],
-        content: [
-          "Сегодня я молодец.",
-          "Даже спина не болит.",
-          "Может, всё не так уж плохо.",
-          "Ещё чуть-чуть — и премия.",
-        ],
-        boredom: [
-          "И это всё? И так двадцать лет?",
-          "Хожу кругами с деловым лицом.",
-          "Интересно, меня вообще кто-нибудь ищет?",
-          "Считаю лампы на потолке. Их сорок две.",
-        ],
-        tired: [
-          "Ещё две задачи — и перерыв.",
-          "Понедельник. Опять.",
-          "Голова гудит.",
-          "Надо бы поесть.",
-          "Скорее бы домой.",
-        ],
-        wrath: [
-          "Все на местах? Сейчас проверю каждого.",
-          "Кто это придумал — работать медленно?",
-          "Мне нужен результат, а не объяснения.",
-          "Сейчас найду виноватого.",
-        ],
-        smug: [
-          "План закрыт. Я умею.",
-          "Пусть теперь сами разбираются.",
-          "Вот что значит твёрдая рука.",
-          "Кабинет, чай, тишина.",
-        ],
-        panic: [
-          "Если завтра не закроем — спросят с меня.",
-          "Почему их так мало?!",
-          "Мне самому скоро есть будет нечего.",
-          "Наверху, кажется, уже всё знают.",
-        ],
-        envy: [
-          "Почему у него участок больше?",
-          "Опять его хвалят. За что?",
-          "Нас тут слишком много начальников.",
-          "Делим одну премию на всех. Смешно.",
-        ],
-        chase: [
-          "Вот этот подойдёт.",
-          "Далеко не уйдёт.",
-          "Стоп. Кто разрешил перерыв?",
-          "Вижу, что ты меня видишь.",
-        ],
-        annoyance: [
-          "Где все?!",
-          "Цех пустой, а план горит.",
-          "Никого. Как будто я тут лишний.",
-        ],
-        routine: [
-          "Обход. Как всегда.",
-          "Пройдусь, посмотрю, покиваю.",
-          "Совещание в три.",
-          "Надо бы что-нибудь возглавить.",
-        ],
-      };
-
-      const DESIRES = {
-        fear: "лишь бы не заметили",
-        rage: "чтобы этот начальник ушёл с предприятия",
-        alarm: "оказаться подальше отсюда",
-        burnout: "дожить до перерыва",
-        calm: "чтобы эти пять минут не кончались",
-        focus: "закрыть задачу",
-        content: "премию и выходной",
-        boredom: "чтобы хоть что-нибудь случилось",
-        tired: "доесть и присесть",
-        wrath: "чтобы все работали",
-        smug: "чтобы так было и дальше",
-        panic: "закрыть план любой ценой",
-        envy: "чтобы хвалили его, а не соседа",
-        chase: "спросить вот с этого",
-        annoyance: "найти хоть кого-нибудь",
-        routine: "дотянуть до совещания",
-      };
-
       const dist = (ax, ay, bx, by) => Math.hypot(ax - bx, ay - by);
 
-      function inShop(x, y) {
-        for (const z of zones) {
-          if ((x - z.x) ** 2 + (y - z.y) ** 2 <= z.radius ** 2) return true;
-        }
-        return false;
+      /* ================= имена и мысли ================= */
+
+      const NAMES = [
+        {
+          first: ["Игорь", "Витя", "Серёжа", "Гена", "Костя", "Паша", "Толя", "Миша",
+                  "Юра", "Боря", "Лёня", "Слава", "Рома", "Дима", "Валера", "Саня"],
+          last: ["Сомов", "Пряхин", "Гусев", "Лапин", "Бубнов", "Чайкин", "Дроздов",
+                 "Зуев", "Лужин", "Ёлкин", "Мухин", "Рябов", "Сухов", "Пименов", "Ким", "Куц"],
+        },
+        {
+          first: ["Люда", "Тамара", "Оля", "Нина", "Рая", "Зоя", "Вера", "Галя",
+                  "Света", "Марина", "Катя", "Даша", "Алла", "Инна", "Валя", "Тоня"],
+          last: ["Сомова", "Пряхина", "Гусева", "Лапина", "Бубнова", "Чайкина", "Дроздова",
+                 "Зуева", "Лужина", "Ёлкина", "Мухина", "Рябова", "Сухова", "Пименова", "Ким", "Куц"],
+        },
+      ];
+
+      function nameOf(id) {
+        const h = hash(id);
+        const set = NAMES[h % 2];
+        return pick(set.first, h >>> 3) + " " + pick(set.last, h >>> 11);
       }
 
-      function workerMood(a, ctxInfo) {
-        if (ctxInfo.order === "mob") return "rage";
-        if (ctxInfo.order === "rest") return "calm";
-        if (ctxInfo.order === "flee") return "alarm";
-        if (ctxInfo.bossDist < 9) return "fear";
-        if (a.energy < 32) return "burnout";
-        if (a.energy > 118) return "content";
-        if (ctxInfo.taskDist < 7) return "focus";
-        if (ctxInfo.taskDist > 20 && ctxInfo.bossDist > 25) return "boredom";
-        return "tired";
-      }
+      // Мысли привязаны к занятию: человек думает о том, что делает. Если сил
+      // мало или нервы на пределе — думает об этом.
+      const THOUGHTS = {
+        tired: [
+          "Ещё одна ходка — и на кухню.",
+          "Ноги гудят.",
+          "Сколько там до конца смены?",
+          "Руки отваливаются.",
+        ],
+        nervous: [
+          "Опять бригадир идёт.",
+          "Только не ко мне.",
+          "Да работаю я, работаю.",
+          "Ещё одно замечание — и я не выдержу.",
+        ],
+        "несёт коробки на склад": [
+          "Шесть коробок. Тяжело, но донесу.",
+          "Тележка бы не помешала.",
+          "Главное — не уронить.",
+          "Вот и весь мой рабочий день.",
+        ],
+        "берёт коробки на приёмке": [
+          "Так, эти берём.",
+          "Фура опять пришла набитая.",
+          "Раз, два — взяли.",
+        ],
+        "идёт на приёмку": [
+          "Надеюсь, фура уже приехала.",
+          "Опять туда-сюда.",
+          "Может, в этот раз пусто будет.",
+        ],
+        "ждёт фуру": [
+          "Ну где эта фура?",
+          "Стою. Жду. Ничего не происходит.",
+          "Хоть постоять спокойно.",
+        ],
+        "ставит коробки на склад": [
+          "Ставлю аккуратно, не как некоторые.",
+          "Ещё один ряд.",
+          "Склад скоро лопнет.",
+        ],
+        "на складе нет места": [
+          "А куда я это дену?!",
+          "Склад полный. Совсем полный.",
+          "Кто вообще это планировал?",
+        ],
+        "идёт на склад": [
+          "Полки пустые, надо бежать.",
+          "Сейчас возьму — и в зал.",
+        ],
+        "берёт товар со склада": [
+          "Беру побольше, чтобы два раза не ходить.",
+          "Эти пойдут на вторую полку.",
+        ],
+        "несёт товар в зал": [
+          "Несу, несу.",
+          "Только бы никто не подрезал.",
+          "В зале уже ждут.",
+        ],
+        "выкладывает товар": [
+          "Ровненько, лицом вперёд.",
+          "Вот теперь полка как полка.",
+          "Красиво же.",
+        ],
+        "полка полная": [
+          "А тут уже всё. Понесу на другую.",
+          "Ну хоть где-то порядок.",
+        ],
+        "ждёт товар со склада": [
+          "Склад пустой. Что я выложу?",
+          "Ждём поставку.",
+        ],
+        "поправляет выкладку": [
+          "Подвину вперёд — так лучше берут.",
+          "Пыль вытру заодно.",
+        ],
+        "идёт в зал": ["Пойду гляну, что там на полках."],
+        "идёт на кассу": [
+          "Касса ждать не любит.",
+          "Сейчас пробьём.",
+        ],
+        "ждёт покупателей": [
+          "Ни одного человека.",
+          "Постою, посмотрю в зал.",
+          "Может, кто-нибудь подойдёт.",
+        ],
+        "обслуживает покупателя": [
+          "Пакет нужен?",
+          "Так, тут у нас три позиции.",
+          "Спасибо за покупку!",
+        ],
+        "обходит магазин": [
+          "Так, кто тут у нас прохлаждается.",
+          "Порядок должен быть.",
+          "Пройдусь, посмотрю.",
+        ],
+        "проверяет участок": [
+          "Здесь вроде работают.",
+          "Отметим: всё нормально.",
+        ],
+        "идёт к работнику": [
+          "Ну-ка, ну-ка.",
+          "А почему мы стоим?",
+        ],
+        "подгоняет работника": [
+          "Работать, работать!",
+          "Стоять будешь дома.",
+        ],
+        "идёт на кухню": [
+          "Наконец-то поем.",
+          "Кофе. Срочно кофе.",
+          "Живот сводит.",
+        ],
+        "ест": [
+          "Вот это я понимаю — перерыв.",
+          "Ещё бы добавки.",
+          "Пятнадцать минут счастья.",
+        ],
+        "идёт на перерыв": [
+          "Всё, мне надо посидеть.",
+          "Пять минут, и обратно.",
+        ],
+        "отдыхает": [
+          "Тишина. Никто не орёт.",
+          "Посижу, пока не нашли.",
+          "Спина, кажется, отпускает.",
+        ],
+        "идёт за товаром": [
+          "Где тут у них это лежит?",
+          "Так, мне нужно две штуки.",
+          "Надеюсь, есть в наличии.",
+        ],
+        "ищет товар": [
+          "Пусто. Опять пусто.",
+          "И что, ничего нет?",
+          "Может, на другой полке?",
+        ],
+        "в очереди": [
+          "Ну почему одна касса?",
+          "Стою, жду.",
+          "Ещё двое передо мной.",
+        ],
+        "на кассе": ["Картой.", "Пакет не нужен."],
+        "уходит с покупкой": ["Взял что хотел.", "Нормальный магазин."],
+        "уходит без покупки": [
+          "Больше сюда не приду.",
+          "Ничего нет, зря зашёл.",
+          "Позор, а не магазин.",
+        ],
+        "возвращается к работе": ["Ладно, пошёл работать."],
+      };
 
-      function bossMood(a, ctxInfo) {
-        if (ctxInfo.order === "hunt") return "wrath";
-        if (a.energy < 70) return "panic";
-        if (ctxInfo.peers >= 3) return "envy";
-        if (a.energy >= SATIATED_AT) return "smug";
-        if (ctxInfo.workerDist < 11) return "chase";
-        if (ctxInfo.workerDist > 26) return "annoyance";
-        return "routine";
-      }
+      const FALLBACK_THOUGHTS = ["Работаем.", "Так, что дальше.", "Ещё немного."];
 
-      // id → {name, role, mood, thought, until}
+      // id → {name, thought, state, until, slot}
       const minds = new Map();
-      let moodCount = { worker: {}, boss: {} };
-      let orderByRole = { worker: null, boss: null };
 
-      function think() {
+      function mindFor(p, now) {
+        let mind = minds.get(p.id);
+        if (!mind) {
+          mind = { name: nameOf(p.id), thought: "", state: "", until: 0, slot: 0 };
+          minds.set(p.id, mind);
+        }
+        // Мысль живёт, пока человек делает то же самое: иначе реплики мелькают
+        // каждый кадр и прочитать их невозможно.
+        const mood =
+          p.stress > 55 ? "nervous" : p.stamina < 32 ? "tired" : p.state;
+        if (mind.state !== mood || now > mind.until) {
+          mind.slot++;
+          mind.state = mood;
+          const list = THOUGHTS[mood] ?? FALLBACK_THOUGHTS;
+          mind.thought = pick(list, hash(p.id + ":" + mind.slot));
+          mind.until = now + 5000 + (hash(p.id + "t" + mind.slot) % 4000);
+        }
+        return mind;
+      }
+
+      function refreshMinds() {
         const now = performance.now();
-        const people = [...tracked.entries()].map(([id, a]) => ({ id, ...a }));
-        const workers = people.filter((p) => !isBoss(p.type));
-        const bosses = people.filter((p) => isBoss(p.type));
-        const counts = { worker: {}, boss: {} };
-
-        for (const p of people) {
-          const role = roleOf(p.type);
-          const info = { order: orderByRole[role] };
-
-          if (role === "worker") {
-            info.bossDist = Infinity;
-            for (const b of bosses) {
-              const d = dist(p.toX, p.toY, b.toX, b.toY);
-              if (d < info.bossDist) info.bossDist = d;
-            }
-            // За станками в цеху начальника замечают позже — и боятся меньше.
-            if (inShop(p.toX, p.toY)) info.bossDist *= 1.6;
-            info.taskDist = Infinity;
-            for (const t of tasks) {
-              const d = dist(p.toX, p.toY, t.x, t.y);
-              if (d < info.taskDist) info.taskDist = d;
-            }
-          } else {
-            info.peers = 0;
-            for (const b of bosses) {
-              if (b.id !== p.id && dist(p.toX, p.toY, b.toX, b.toY) <= 12) info.peers++;
-            }
-            info.workerDist = Infinity;
-            for (const w of workers) {
-              const d = dist(p.toX, p.toY, w.toX, w.toY);
-              if (d < info.workerDist) info.workerDist = d;
-            }
-          }
-
-          const mood = role === "worker" ? workerMood(p, info) : bossMood(p, info);
-          counts[role][mood] = (counts[role][mood] ?? 0) + 1;
-
-          let mind = minds.get(p.id);
-          if (!mind) {
-            mind = { name: nameOf(p.id, role), role, mood: null, thought: "", until: 0, slot: 0 };
-            minds.set(p.id, mind);
-          }
-          // Новая мысль — когда сменилось настроение или старая «доиграла».
-          // Иначе мысли мелькали бы каждый кадр и читать их было бы нельзя.
-          if (mind.mood !== mood || now > mind.until) {
-            mind.slot++;
-            mind.mood = mood;
-            mind.thought = pick(THOUGHTS[mood], hash(p.id + ":" + mind.slot));
-            mind.until = now + 5200 + (hash(p.id + "t" + mind.slot) % 4200);
-          }
-        }
-
-        // Ушедшие с предприятия память о себе не оставляют.
+        for (const [id, p] of tracked) mindFor({ ...p, id }, now);
         for (const id of minds.keys()) if (!tracked.has(id)) minds.delete(id);
-
-        moodCount = counts;
-        renderMoodRows("worker", workers.length);
-        renderMoodRows("boss", bosses.length);
-        renderShopMood();
-        if (selectedId) renderCard();
       }
 
-      function topMoods(role, limit) {
-        return Object.entries(moodCount[role] ?? {})
-          .sort((a, b) => b[1] - a[1])
-          .slice(0, limit);
-      }
-
-      function renderMoodRows(role, total) {
-        const box = el(role + "-moods");
-        box.textContent = "";
-        el(role + "-thinking").textContent = total ? total + " чел." : "никого";
-        for (const [mood, n] of topMoods(role, 4)) {
-          const m = MOODS[role][mood];
-          const row = document.createElement("div");
-          row.className = "mood-row";
-          row.innerHTML =
-            "<span>" + m.icon + "</span><span>" + m.label + "</span>" +
-            '<span class="bar"><i style="width:' + Math.round((n / Math.max(total, 1)) * 100) +
-            "%;background:" + m.color + '"></i></span>' +
-            '<span class="n">' + n + "</span>";
-          box.appendChild(row);
-        }
-      }
-
-      function renderShopMood() {
-        const top = topMoods("worker", 1)[0];
-        if (!top) {
-          el("shop-mood").textContent = "—";
-          return;
-        }
-        const m = MOODS.worker[top[0]];
-        el("shop-mood").innerHTML = m.icon + " " + m.label + " <small>· " + top[1] + "</small>";
-      }
-
-      /* ---------- облака мыслей ---------- */
-
-      // Показываем не всех сразу — иначе это стена текста. Берём несколько
-      // человек с разными настроениями и обновляем состав раз в несколько секунд.
-      function renderCloud(role) {
-        const box = el(role + "-cloud");
-        const people = [...minds.entries()].filter(([, m]) => m.role === role);
-        if (people.length === 0) {
-          box.innerHTML = '<p class="empty-card">Никого не осталось.</p>';
-          return;
-        }
-
-        const byMood = new Map();
-        for (const [id, m] of people) {
-          if (!byMood.has(m.mood)) byMood.set(m.mood, []);
-          byMood.get(m.mood).push([id, m]);
-        }
-
-        // Сначала по одному представителю от каждого настроения — так облако
-        // показывает разброс в цеху, а не шесть одинаковых реплик. Но если
-        // настроение в цеху одно на всех (а при общем приказе так и бывает),
-        // добираем разных людей из него же: единодушие — это тоже картина,
-        // и показывать его одним пузырём было бы похоже на поломку.
-        const moods = [...byMood.keys()].sort(
-          (a, b) => byMood.get(b).length - byMood.get(a).length,
-        );
-        const chosen = [];
-        const usedIds = new Set();
-        const usedThoughts = new Set();
-        const spin = Math.floor(Date.now() / 4000);
-
-        const take = (mood, round, uniqueThought) => {
-          const list = byMood.get(mood);
-          for (let k = 0; k < list.length; k++) {
-            const [id, mind] = list[(spin + round * 7 + k) % list.length];
-            if (usedIds.has(id)) continue;
-            if (uniqueThought && usedThoughts.has(mind.thought)) continue;
-            usedIds.add(id);
-            usedThoughts.add(mind.thought);
-            chosen.push([id, mind, mood, list.length]);
-            return true;
-          }
-          return false;
-        };
-
-        for (let round = 0; round < 6 && chosen.length < 6; round++) {
-          let progress = false;
-          for (const mood of moods) {
-            if (chosen.length >= 6) break;
-            if (take(mood, round, true) || take(mood, round, false)) progress = true;
-          }
-          if (!progress) break;
-        }
-
-        box.textContent = "";
-        for (const [id, mind, mood, share] of chosen) {
-          const m = MOODS[role][mood];
-          const div = document.createElement("div");
-          div.className = "bubble " + role;
-          div.style.fontSize = (13 + Math.min(share / Math.max(people.length, 1), 0.5) * 6).toFixed(1) + "px";
-          div.innerHTML =
-            "<p>«" + mind.thought + "»</p>" +
-            '<span class="who"><b>' + mind.name + "</b> · " + m.icon + " " + m.label +
-            (share > 1 ? " · так думают " + share : "") + "</span>";
-          div.addEventListener("click", () => {
-            selectedId = id;
-            renderCard();
-            document.querySelector(".stage").scrollIntoView({ behavior: "smooth", block: "center" });
-          });
-          box.appendChild(div);
-        }
-      }
-
-      function renderCard() {
-        const card = el("card");
-        const mind = selectedId ? minds.get(selectedId) : null;
-        const a = selectedId ? tracked.get(selectedId) : null;
-        if (!mind || !a) {
-          card.hidden = true;
-          el("card-empty").hidden = false;
-          el("card-empty").textContent = selectedId
-            ? "Этого человека на предприятии больше нет."
-            : "Пока никто не выбран.";
-          if (!a) selectedId = null;
-          return;
-        }
-
-        const role = mind.role;
-        const m = MOODS[role][mind.mood];
-        const power = Math.round((a.energy / MAX_ENERGY[role]) * 100);
-        card.hidden = false;
-        el("card-empty").hidden = true;
-        card.innerHTML =
-          "<dt>Кто</dt><dd><b>" + mind.name + "</b> · " +
-          (role === "worker" ? "рабочий" : "начальник") + "</dd>" +
-          "<dt>Силы</dt><dd>" + power + "%</dd>" +
-          "<dt>Поколение</dt><dd>" + (a.gen ?? 0) + "</dd>" +
-          "<dt>Настроение</dt><dd>" + m.icon + " " + m.label + "</dd>" +
-          '<dt>Мысль</dt><dd class="quote">«' + mind.thought + "»</dd>" +
-          "<dt>Хочет</dt><dd>" + DESIRES[mind.mood] + "</dd>";
-      }
-
-      /* ================= данные мира ================= */
+      /* ================= данные ================= */
 
       function showError(message) {
         const node = el("error");
@@ -1249,73 +828,187 @@
           : "смена идёт · тик " + sec + " с назад";
       }
 
-      function applyAgents(agents) {
+      function applyPeople(people) {
         const now = performance.now();
         const progress = Math.min((now - tweenStart) / TWEEN_MS, 1);
         const next = new Map();
 
-        for (const a of agents) {
-          const prev = tracked.get(a.id);
-          const fromX = prev ? prev.fromX + (prev.toX - prev.fromX) * progress : a.x;
-          const fromY = prev ? prev.fromY + (prev.toY - prev.fromY) * progress : a.y;
-          if (!prev && !firstFrame) flashes.push({ x: a.x, y: a.y, born: now, kind: "hire" });
-          next.set(a.id, {
-            fromX,
-            fromY,
-            toX: a.x,
-            toY: a.y,
-            energy: a.energy,
-            type: a.type,
-            gen: a.generation,
-            speed: a.speed,
-            // Постоянное число человека: по нему расходится фаза шага, чтобы
-            // цех не маршировал строем. Считаем один раз, а не каждый кадр.
-            seed: prev ? prev.seed : hash(a.id),
-            angle: Math.atan2(a.y - fromY, a.x - fromX),
+        for (const p of people) {
+          const prev = tracked.get(p.id);
+          const fromX = prev ? prev.fromX + (prev.toX - prev.fromX) * progress : p.x;
+          const fromY = prev ? prev.fromY + (prev.toY - prev.fromY) * progress : p.y;
+          if (!prev && !firstFrame && p.role === "customer") {
+            flashes.push({ x: p.x, y: p.y, born: now, kind: "come" });
+          }
+          next.set(p.id, {
+            fromX, fromY, toX: p.x, toY: p.y,
+            role: p.role,
+            state: p.state,
+            carry: p.carry,
+            stamina: p.stamina,
+            stress: p.stress,
+            seed: prev ? prev.seed : hash(p.id),
+            angle: Math.atan2(p.y - fromY, p.x - fromX),
           });
         }
 
         if (!firstFrame) {
           for (const [id, prev] of tracked) {
-            if (!next.has(id)) {
-              flashes.push({
-                x: prev.toX,
-                y: prev.toY,
-                born: now,
-                kind: isBoss(prev.type) ? "boss-left" : "fired",
-              });
-            }
+            if (!next.has(id)) flashes.push({ x: prev.toX, y: prev.toY, born: now, kind: "left" });
           }
         }
 
         tracked = next;
         tweenStart = now;
         firstFrame = false;
+      }
 
-        const workers = agents.filter((a) => !isBoss(a.type));
-        const bosses = agents.filter((a) => isBoss(a.type));
-        el("worker-count").textContent = workers.length;
-        el("boss-count").textContent = bosses.length;
-        el("generation").textContent = agents.reduce((m, a) => Math.max(m, a.generation), 0);
+      const stockOf = (kind) =>
+        stations.filter((s) => s.kind === kind).reduce((n, s) => n + s.stock, 0);
+      const capacityOf = (kind) =>
+        stations.filter((s) => s.kind === kind).reduce((n, s) => n + s.capacity, 0);
+
+      function renderNumbers() {
+        const people = [...tracked.values()];
+        const customers = people.filter((p) => p.role === "customer");
+        const staff = people.filter((p) => p.role !== "customer");
+        const queue = customers.filter((p) => p.state === "в очереди").length;
+
+        el("sold").textContent = shop.sold_units ?? 0;
+        el("revenue").textContent = (shop.revenue ?? 0).toLocaleString("ru-RU") + " ₽";
+        el("lost").textContent = shop.lost_customers ?? 0;
+        el("queue").textContent = queue;
+        el("customers").textContent = customers.length;
+        el("staff").textContent = staff.length;
+
+        for (const [kind, id] of [["shelf", "shelves"], ["warehouse", "warehouse"], ["dock", "dock"]]) {
+          const stock = stockOf(kind);
+          const cap = capacityOf(kind) || 1;
+          el(id).innerHTML = stock + " <small>/ " + capacityOf(kind) + "</small>";
+          el(id + "-bar").style.width = Math.round((stock / cap) * 100) + "%";
+        }
+      }
+
+      function renderCrew() {
+        const box = el("crew");
+        const people = [...tracked.values()];
+        box.textContent = "";
+
+        for (const role of ["carrier_in", "carrier_out", "seller", "foreman", "customer"]) {
+          const group = people.filter((p) => p.role === role);
+          const row = document.createElement("div");
+          row.className = "crew-row";
+          row.style.borderColor = COLORS[role];
+
+          const jobs = new Map();
+          for (const p of group) jobs.set(p.state, (jobs.get(p.state) ?? 0) + 1);
+          const text = [...jobs.entries()]
+            .sort((a, b) => b[1] - a[1])
+            .map(([state, n]) => (n > 1 ? n + " " + state : state))
+            .join(" · ");
+
+          row.innerHTML =
+            '<div class="who"><b>' + CREW_NAME[role] + "</b><span>" + group.length + " чел.</span></div>" +
+            '<p class="jobs">' + (text || "никого") + "</p>";
+          box.appendChild(row);
+        }
+      }
+
+      // В облаке показываем по одному представителю от каждого занятия —
+      // так видно разброс, а не шесть одинаковых реплик.
+      function renderCloud() {
+        const box = el("cloud");
+        const people = [...tracked.entries()];
+        if (people.length === 0) {
+          box.innerHTML = '<p class="empty-card">В магазине пусто.</p>';
+          return;
+        }
+
+        const byState = new Map();
+        for (const [id, p] of people) {
+          if (!byState.has(p.state)) byState.set(p.state, []);
+          byState.get(p.state).push([id, p]);
+        }
+
+        const spin = Math.floor(Date.now() / 4000);
+        const states = [...byState.keys()].sort((a, b) => byState.get(b).length - byState.get(a).length);
+        const chosen = [];
+        for (const state of states) {
+          const list = byState.get(state);
+          const [id, p] = list[spin % list.length];
+          chosen.push([id, p, list.length]);
+          if (chosen.length >= 6) break;
+        }
+
+        box.textContent = "";
+        for (const [id, p, share] of chosen) {
+          const mind = minds.get(id);
+          if (!mind) continue;
+          const div = document.createElement("div");
+          div.className = "bubble";
+          div.style.borderColor = COLORS[p.role] + "66";
+          div.style.background = COLORS[p.role] + "14";
+          div.innerHTML =
+            "<p>«" + mind.thought + "»</p>" +
+            '<span class="who"><b style="color:' + COLORS[p.role] + '">' + mind.name + "</b> · " +
+            ROLE_NAME[p.role] + " · " + p.state + (share > 1 ? " (" + share + ")" : "") + "</span>";
+          div.addEventListener("click", () => {
+            selectedId = id;
+            renderCard();
+            document.querySelector(".stage").scrollIntoView({ behavior: "smooth", block: "center" });
+          });
+          box.appendChild(div);
+        }
+      }
+
+      function renderCard() {
+        const card = el("card");
+        const p = selectedId ? tracked.get(selectedId) : null;
+        const mind = selectedId ? minds.get(selectedId) : null;
+        if (!p || !mind) {
+          card.hidden = true;
+          el("card-empty").hidden = false;
+          el("card-empty").textContent = selectedId
+            ? "Этого человека в магазине больше нет."
+            : "Пока никто не выбран.";
+          if (!p) selectedId = null;
+          return;
+        }
+
+        card.hidden = false;
+        el("card-empty").hidden = true;
+        card.innerHTML =
+          "<dt>Кто</dt><dd><b>" + mind.name + "</b> · " + ROLE_NAME[p.role] + "</dd>" +
+          "<dt>Занят</dt><dd>" + p.state + "</dd>" +
+          (p.carry > 0
+            ? "<dt>В руках</dt><dd>" + p.carry + (p.role === "customer" ? " шт товара" : " коробок") + "</dd>"
+            : "") +
+          "<dt>Силы</dt><dd>" + Math.round(p.stamina) + "%</dd>" +
+          (p.role === "customer"
+            ? ""
+            : "<dt>Нервы</dt><dd>" + Math.round(p.stress) + "%</dd>") +
+          '<dt>Мысль</dt><dd class="quote">«' + mind.thought + "»</dd>";
       }
 
       async function refresh() {
         if (inFlight) return;
         inFlight = true;
         try {
-          const [worldRows, agents, taskRows] = await Promise.all([
-            select("world_state", "select=*&id=eq.1"),
-            select("agents", "select=id,type,x,y,energy,speed,generation"),
-            select("food", "select=id,x,y"),
+          const [stateRows, people, stationRows] = await Promise.all([
+            select("shop_state", "select=*&id=eq.1"),
+            select("staff", "select=id,role,x,y,state,carry,stamina,stress"),
+            select("stations", "select=*"),
           ]);
 
-          if (worldRows && worldRows[0]) world = worldRows[0];
-          tasks = taskRows ?? [];
-          applyAgents(agents ?? []);
+          if (stateRows && stateRows[0]) shop = stateRows[0];
+          stations = stationRows ?? [];
+          applyPeople(people ?? []);
+          refreshMinds();
 
-          el("tick").textContent = world.tick_count ?? "—";
-          el("task-count").textContent = tasks.length;
-          setPulse(world.last_tick_at);
+          renderNumbers();
+          renderCrew();
+          renderCard();
+          setPulse(shop.last_tick_at);
           showError(null);
         } catch (e) {
           showError(e && e.message ? e.message : String(e));
@@ -1325,19 +1018,10 @@
         }
       }
 
-      async function loadMap() {
-        const [machineRows, zoneRows] = await Promise.all([
-          select("obstacles", "select=*"),
-          select("food_zones", "select=*"),
-        ]);
-        machines = machineRows ?? [];
-        zones = zoneRows ?? [];
-      }
-
       async function loadHistory() {
         const rows = await select(
-          "population_history",
-          "select=snapshot_at,herbivore_count,predator_count,food_count" +
+          "shop_history",
+          "select=snapshot_at,sold_units,revenue,shelves,warehouse,dock,queue,customers" +
             "&order=id.desc&limit=" + HISTORY_POINTS,
         );
         history = (rows ?? []).slice().reverse();
@@ -1345,55 +1029,35 @@
         drawTable();
       }
 
-      /* ================= рисование цеха ================= */
+      /* ================= рисование магазина ================= */
 
-      // Кому сейчас пририсована мысль прямо в цеху. Меняем состав редко:
-      // мысль должно быть видно достаточно долго, чтобы её успели прочитать.
       let spotlight = [];
       let spotlightAt = 0;
       let vignette = null;
       let vignetteFor = "";
 
       function pickSpotlight(narrow) {
-        const people = [...tracked.keys()];
-        if (people.length === 0) {
-          spotlight = [];
-          return;
+        const ids = [...tracked.keys()];
+        const seen = new Set();
+        const out = [];
+        // Предпочитаем тех, кто занят чем-то говорящим: несёт, выкладывает,
+        // стоит в очереди — по одному на занятие.
+        for (const id of ids) {
+          const p = tracked.get(id);
+          const mind = minds.get(id);
+          if (!p || !mind || seen.has(p.state)) continue;
+          seen.add(p.state);
+          out.push(id);
+          if (out.length >= (narrow ? 2 : 4)) break;
         }
-        // Предпочитаем тех, у кого сейчас сильное чувство: страх, ярость, паника.
-        const loud = ["fear", "rage", "panic", "chase", "burnout", "envy", "content"];
-        const scored = people
-          .map((id) => ({ id, mind: minds.get(id) }))
-          .filter((p) => p.mind)
-          .sort((a, b) => loud.indexOf(b.mind.mood) - loud.indexOf(a.mind.mood));
-        // Две одинаковые реплики рядом выглядят как ошибка отрисовки,
-        // хотя это просто двое с одинаковым настроением.
-        const uniq = (list, limit) => {
-          const seen = new Set();
-          const out = [];
-          for (const p of list) {
-            if (seen.has(p.mind.thought)) continue;
-            seen.add(p.mind.thought);
-            out.push(p);
-            if (out.length >= limit) break;
-          }
-          return out;
-        };
-        // На телефоне карта меньше ладони: пять облачков закрыли бы весь цех.
-        const workers = uniq(scored.filter((p) => p.mind.role === "worker"), narrow ? 1 : 3);
-        const bosses = uniq(scored.filter((p) => p.mind.role === "boss"), narrow ? 1 : 2);
-        spotlight = [...workers, ...bosses].map((p) => p.id);
+        spotlight = out;
       }
 
-      // placed — прямоугольники уже нарисованных облачков: наезжающие друг
-      // на друга реплики нечитаемы, поэтому лишнее лучше не рисовать вовсе.
-      function drawBubble(x, y, text, role, dpr, scale, placed) {
+      function drawBubble(x, y, text, color, dpr, scale, placed) {
         const size = Math.max(11 * dpr, Math.min(15 * dpr, scale * 1.15));
         ctx.font = size + "px ui-sans-serif, system-ui, sans-serif";
         const padding = size * 0.55;
 
-        // Длинную мысль обрезаем, а не сжимаем: сжатый fillText'ом текст
-        // выглядит как брак печати.
         const maxText = Math.min(280 * dpr, canvas.width * 0.62) - padding * 2;
         let label = text;
         if (ctx.measureText(label).width > maxText) {
@@ -1404,13 +1068,9 @@
         }
         const w = ctx.measureText(label).width + padding * 2;
         const h = size * 1.9;
-        let bx = x - w / 2;
-        let by = y - h - scale * 1.6;
-        // Сверху оставляем полосу под плашкой «иду за: …», иначе реплика
-        // ложится прямо на неё и нечитаемы обе.
         const top = (el("follow").hidden ? 4 : 44) * dpr;
-        bx = Math.max(4, Math.min(bx, canvas.width - w - 4));
-        by = Math.max(top, by);
+        let bx = Math.max(4, Math.min(x - w / 2, canvas.width - w - 4));
+        let by = Math.max(top, y - h - scale * 1.9);
 
         const hits = (ay) =>
           placed.some((p) => bx < p.x + p.w && bx + w > p.x && ay < p.y + p.h && ay + h > p.y);
@@ -1419,7 +1079,7 @@
         placed.push({ x: bx, y: by, w, h });
 
         ctx.fillStyle = "rgba(10, 14, 18, 0.88)";
-        ctx.strokeStyle = role === "boss" ? "rgba(217,89,38,0.55)" : "rgba(25,158,112,0.55)";
+        ctx.strokeStyle = color + "8c";
         ctx.lineWidth = dpr;
         ctx.beginPath();
         if (ctx.roundRect) ctx.roundRect(bx, by, w, h, [h / 2, h / 2, h / 2, 3 * dpr]);
@@ -1427,10 +1087,9 @@
         ctx.fill();
         ctx.stroke();
 
-        // Хвостик к голове — чтобы было понятно, чья это мысль.
         ctx.beginPath();
         ctx.moveTo(x - size * 0.25, by + h);
-        ctx.lineTo(x, y - scale * 0.9);
+        ctx.lineTo(x, y - scale * 1.1);
         ctx.lineTo(x + size * 0.25, by + h);
         ctx.closePath();
         ctx.fill();
@@ -1440,54 +1099,6 @@
         ctx.fillText(label, bx + padding, by + h / 2);
       }
 
-      /* ---------- человечки ---------- */
-
-      // Лицо — это настроение, которое уже посчитано в think(): мы не выдумываем
-      // выражение, а показываем то же самое, что написано в личном деле.
-      const FACES = {
-        fear:      { eyes: "wide", mouth: "open",  brow: "worry" },
-        rage:      { eyes: "dot",  mouth: "flat",  brow: "angry" },
-        alarm:     { eyes: "wide", mouth: "flat",  brow: "worry" },
-        burnout:   { eyes: "line", mouth: "sad",   brow: "worry" },
-        calm:      { eyes: "line", mouth: "smile", brow: null },
-        focus:     { eyes: "dot",  mouth: "smile", brow: null },
-        content:   { eyes: "dot",  mouth: "smile", brow: null },
-        boredom:   { eyes: "side", mouth: "flat",  brow: null },
-        tired:     { eyes: "line", mouth: "flat",  brow: null },
-        wrath:     { eyes: "dot",  mouth: "open",  brow: "angry" },
-        smug:      { eyes: "line", mouth: "smile", brow: null },
-        panic:     { eyes: "wide", mouth: "open",  brow: "worry" },
-        envy:      { eyes: "side", mouth: "sad",   brow: "angry" },
-        chase:     { eyes: "dot",  mouth: "grin",  brow: "angry" },
-        annoyance: { eyes: "side", mouth: "flat",  brow: "angry" },
-        routine:   { eyes: "dot",  mouth: "flat",  brow: null },
-      };
-
-      // Градиенты — самая дорогая часть фигурки, а их всего два вида на роль.
-      // Создаём их в системе координат самого человечка (после translate),
-      // поэтому один и тот же объект годится для всего цеха.
-      const gradientCache = new Map();
-      function personGradients(role, r) {
-        const key = role + ":" + Math.round(r * 2);
-        let g = gradientCache.get(key);
-        if (g) return g;
-        const body = ctx.createLinearGradient(0, -r * 0.72, 0, r * 0.54);
-        if (role === "boss") {
-          body.addColorStop(0, "#f08a52");
-          body.addColorStop(1, "#8f3416");
-        } else {
-          body.addColorStop(0, "#3fd39a");
-          body.addColorStop(1, "#11694f");
-        }
-        const skin = ctx.createLinearGradient(0, -r * 1.83, 0, -r * 0.73);
-        skin.addColorStop(0, "#ffe0c2");
-        skin.addColorStop(1, "#e0a97f");
-        g = { body, skin };
-        if (gradientCache.size > 40) gradientCache.clear(); // масштаб поменялся
-        gradientCache.set(key, g);
-        return g;
-      }
-
       const capsule = (x, y, w, h, r) => {
         ctx.beginPath();
         if (ctx.roundRect) ctx.roundRect(x, y, w, h, r);
@@ -1495,48 +1106,67 @@
         ctx.fill();
       };
 
-      // Рост человечка — 3.2r, где r — тот же радиус, которым раньше рисовалась
-      // точка. Всё внутри считается от r, поэтому фигурка одинаково выглядит
-      // и на телефоне, и при сильном приближении.
-      function drawPerson(x, y, r, a, mood, now, dpr) {
-        const boss = isBoss(a.type);
-        const full = Math.max(0.2, Math.min(a.energy / (boss ? 200 : 140), 1));
-        const face = FACES[mood] ?? FACES.routine;
+      // Градиенты — самая дорогая часть фигурки, а их всего два на должность.
+      // Создаём в системе координат самого человечка (после translate), поэтому
+      // один объект годится для всех.
+      const gradientCache = new Map();
+      const BODY = {
+        carrier_in: ["#3fd39a", "#11694f"],
+        carrier_out: ["#7cc0f0", "#1d5c95"],
+        seller: ["#cba6e8", "#6b3f94"],
+        foreman: ["#f08a52", "#8f3416"],
+        customer: ["#dbe4eb", "#6d7d89"],
+      };
 
-        // Шаг: фаза своя у каждого, иначе цех марширует строем.
-        const phase = now / 210 + (a.seed % 100) / 16;
-        const walk = Math.sin(phase);
-        const bob = walk * r * 0.09;
-        const facing = Math.cos(a.angle) >= 0 ? 1 : -1;
+      function personGradients(role, r) {
+        const key = role + ":" + Math.round(r * 2);
+        let g = gradientCache.get(key);
+        if (g) return g;
+        const body = ctx.createLinearGradient(0, -r * 0.72, 0, r * 0.54);
+        body.addColorStop(0, BODY[role][0]);
+        body.addColorStop(1, BODY[role][1]);
+        const skin = ctx.createLinearGradient(0, -r * 1.83, 0, -r * 0.73);
+        skin.addColorStop(0, "#ffe0c2");
+        skin.addColorStop(1, "#e0a97f");
+        g = { body, skin };
+        if (gradientCache.size > 40) gradientCache.clear();
+        gradientCache.set(key, g);
+        return g;
+      }
+
+      function drawPerson(x, y, r, p, now, dpr) {
+        const paint = personGradients(p.role, r);
+        const phase = now / 210 + (p.seed % 100) / 16;
+        const walkPhase = Math.sin(phase);
+        const bob = walkPhase * r * 0.09;
+        const facing = Math.cos(p.angle) >= 0 ? 1 : -1;
+        const worker = p.role !== "customer";
+        const tired = worker && p.stamina < 30;
 
         ctx.save();
         ctx.translate(x, y);
         ctx.scale(facing, 1);
-        // Вблизи выцветший человечек выглядит как ошибка отрисовки, поэтому
-        // силы показываем яркостью мягче, чем на точках.
-        ctx.globalAlpha = 0.68 + full * 0.32;
+        ctx.globalAlpha = tired ? 0.75 : 1;
 
-        // Тень — она и делает фигурку стоящей на полу, а не висящей в воздухе.
-        const alpha = ctx.globalAlpha;
-        ctx.globalAlpha = alpha * 0.55;
+        // Тень — она и делает фигурку стоящей на полу.
+        ctx.globalAlpha *= 0.55;
         ctx.fillStyle = "rgba(0,0,0,0.75)";
         ctx.beginPath();
         ctx.ellipse(0, r * 1.15, r * 0.8, r * 0.26, 0, 0, Math.PI * 2);
         ctx.fill();
-        ctx.globalAlpha = alpha;
+        ctx.globalAlpha = tired ? 0.75 : 1;
 
         // Ноги.
-        ctx.fillStyle = boss ? "#5b2a16" : "#12503c";
-        capsule(-r * 0.46 + walk * r * 0.22, r * 0.3 + bob, r * 0.36, r * 0.9, r * 0.18);
-        capsule(r * 0.1 - walk * r * 0.22, r * 0.3 + bob, r * 0.36, r * 0.9, r * 0.18);
+        ctx.fillStyle = BODY[p.role][1];
+        capsule(-r * 0.46 + walkPhase * r * 0.22, r * 0.3 + bob, r * 0.36, r * 0.9, r * 0.18);
+        capsule(r * 0.1 - walkPhase * r * 0.22, r * 0.3 + bob, r * 0.36, r * 0.9, r * 0.18);
 
-        // Туловище с бликом сверху — именно блик читается как объём.
-        const paint = personGradients(boss ? "boss" : "worker", r);
+        // Туловище.
         ctx.fillStyle = paint.body;
         capsule(-r * 0.62, -r * 0.72 + bob, r * 1.24, r * 1.26, r * 0.4);
 
-        if (boss) {
-          // Рубашка и галстук — начальника видно по одежде, а не только по цвету.
+        if (p.role === "foreman") {
+          // Рубашка и галстук: бригадира видно по одежде, а не только по цвету.
           ctx.fillStyle = "#f6e9de";
           ctx.beginPath();
           ctx.moveTo(-r * 0.22, -r * 0.72 + bob);
@@ -1551,7 +1181,11 @@
           ctx.lineTo(0, -r * 0.08 + bob);
           ctx.closePath();
           ctx.fill();
-        } else {
+        } else if (p.role === "seller") {
+          // Фартук.
+          ctx.fillStyle = "rgba(255,255,255,0.22)";
+          capsule(-r * 0.42, -r * 0.3 + bob, r * 0.84, r * 0.8, r * 0.12);
+        } else if (worker) {
           // Лямки спецовки.
           ctx.strokeStyle = "rgba(255,255,255,0.28)";
           ctx.lineWidth = Math.max(dpr * 0.8, r * 0.1);
@@ -1564,9 +1198,9 @@
         }
 
         // Руки.
-        ctx.fillStyle = boss ? "#c9542a" : "#1a8f6b";
-        capsule(-r * 0.86, -r * 0.6 + bob - walk * r * 0.12, r * 0.3, r * 0.82, r * 0.15);
-        capsule(r * 0.56, -r * 0.6 + bob + walk * r * 0.12, r * 0.3, r * 0.82, r * 0.15);
+        ctx.fillStyle = BODY[p.role][1];
+        capsule(-r * 0.86, -r * 0.6 + bob - walkPhase * r * 0.12, r * 0.3, r * 0.82, r * 0.15);
+        capsule(r * 0.56, -r * 0.6 + bob + walkPhase * r * 0.12, r * 0.3, r * 0.82, r * 0.15);
 
         // Голова.
         const hy = -r * 1.28 + bob;
@@ -1575,78 +1209,174 @@
         ctx.arc(0, hy, r * 0.56, 0, Math.PI * 2);
         ctx.fill();
 
-        if (boss) {
-          // Причёска: аккуратная, с пробором.
-          ctx.fillStyle = "#3a2a22";
-          ctx.beginPath();
-          ctx.arc(0, hy - r * 0.1, r * 0.56, Math.PI * 1.05, Math.PI * 2.05);
-          ctx.fill();
-        } else {
-          // Каска. Козырёк идёт выше бровей — иначе на мелком масштабе он
-          // читается как очки на пол-лица.
+        if (p.role === "carrier_in" || p.role === "carrier_out") {
+          // Каска.
           ctx.fillStyle = "#f2c14e";
           ctx.beginPath();
           ctx.arc(0, hy - r * 0.2, r * 0.58, Math.PI, Math.PI * 2);
           ctx.fill();
           ctx.fillRect(-r * 0.7, hy - r * 0.26, r * 1.4, r * 0.13);
+        } else {
+          ctx.fillStyle = p.role === "customer" ? "#4a4038" : "#3a2a22";
+          ctx.beginPath();
+          ctx.arc(0, hy - r * 0.1, r * 0.56, Math.PI * 1.05, Math.PI * 2.05);
+          ctx.fill();
         }
 
-        // Лицо.
+        // Лицо: устал — глаза щёлочками, нервничает — брови домиком.
         const eyeY = hy + r * 0.06;
         ctx.fillStyle = "#2a2018";
         ctx.strokeStyle = "#2a2018";
         ctx.lineWidth = Math.max(dpr * 0.7, r * 0.07);
         for (const side of [-1, 1]) {
           const ex = side * r * 0.2;
-          if (face.eyes === "line") {
+          if (tired) {
             ctx.beginPath();
             ctx.moveTo(ex - r * 0.1, eyeY);
             ctx.lineTo(ex + r * 0.1, eyeY);
             ctx.stroke();
           } else {
-            const rad = face.eyes === "wide" ? r * 0.13 : r * 0.08;
-            const shift = face.eyes === "side" ? r * 0.05 : 0;
             ctx.beginPath();
-            ctx.arc(ex + shift, eyeY, rad, 0, Math.PI * 2);
+            ctx.arc(ex, eyeY, r * 0.08, 0, Math.PI * 2);
             ctx.fill();
           }
-          if (face.brow) {
-            // У злого бровь опущена к переносице, у испуганного — поднята.
+          if (worker && p.stress > 55) {
             const inner = ex - side * r * 0.14;
             const outer = ex + side * r * 0.14;
-            const tilt = face.brow === "angry" ? r * 0.09 : -r * 0.09;
             ctx.beginPath();
-            ctx.moveTo(inner, eyeY - r * 0.22 + tilt);
-            ctx.lineTo(outer, eyeY - r * 0.22 - tilt);
+            ctx.moveTo(inner, eyeY - r * 0.22 + r * 0.09);
+            ctx.lineTo(outer, eyeY - r * 0.22 - r * 0.09);
             ctx.stroke();
           }
         }
 
         const my = hy + r * 0.3;
         ctx.beginPath();
-        if (face.mouth === "smile" || face.mouth === "grin") {
-          ctx.arc(0, my - r * 0.08, r * (face.mouth === "grin" ? 0.22 : 0.16), 0.15 * Math.PI, 0.85 * Math.PI);
+        if (p.state === "ест" || p.state === "отдыхает" || p.state === "уходит с покупкой") {
+          ctx.arc(0, my - r * 0.08, r * 0.16, 0.15 * Math.PI, 0.85 * Math.PI);
           ctx.stroke();
-        } else if (face.mouth === "sad") {
+        } else if (p.state === "уходит без покупки" || p.state === "ищет товар") {
           ctx.arc(0, my + r * 0.12, r * 0.16, 1.15 * Math.PI, 1.85 * Math.PI);
           ctx.stroke();
-        } else if (face.mouth === "open") {
-          ctx.ellipse(0, my, r * 0.1, r * 0.13, 0, 0, Math.PI * 2);
-          ctx.fill();
         } else {
           ctx.moveTo(-r * 0.12, my);
           ctx.lineTo(r * 0.12, my);
           ctx.stroke();
         }
 
+        // Груз в руках — главное, что нужно видеть: кто что несёт.
+        if (p.carry > 0) {
+          const boxW = r * (p.role === "customer" ? 0.7 : 1.0);
+          const boxH = r * (p.role === "customer" ? 0.55 : 0.8);
+          ctx.fillStyle = p.role === "customer" ? "#8f9aa4" : COLORS.goods;
+          capsule(-boxW / 2, -r * 0.15 + bob, boxW, boxH, r * 0.1);
+          ctx.strokeStyle = "rgba(0,0,0,0.35)";
+          ctx.lineWidth = Math.max(dpr * 0.7, r * 0.06);
+          ctx.beginPath();
+          ctx.moveTo(-boxW / 2, -r * 0.15 + bob + boxH / 2);
+          ctx.lineTo(boxW / 2, -r * 0.15 + bob + boxH / 2);
+          ctx.stroke();
+          if (r > 9) {
+            ctx.fillStyle = "rgba(20,16,10,0.85)";
+            ctx.font = "bold " + Math.round(r * 0.5) + "px ui-sans-serif, system-ui, sans-serif";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.scale(facing, 1); // текст не должен быть зеркальным
+            ctx.fillText(String(p.carry), 0, -r * 0.15 + bob + boxH / 2);
+            ctx.scale(facing, 1);
+            ctx.textAlign = "left";
+          }
+        }
+
         ctx.restore();
         ctx.globalAlpha = 1;
       }
 
+      function drawStation(s, sx, sy, scale, dpr, detailed) {
+        const x = sx(s.x);
+        const y = sy(s.y);
+        const w = s.width * scale;
+        const h = s.height * scale;
+
+        const fill = {
+          dock: "rgba(215, 165, 92, 0.10)",
+          warehouse: "rgba(215, 165, 92, 0.07)",
+          shelf: "rgba(63, 143, 208, 0.10)",
+          checkout: "rgba(169, 127, 208, 0.12)",
+          kitchen: "rgba(25, 158, 112, 0.10)",
+          rest: "rgba(25, 158, 112, 0.07)",
+          entrance: "rgba(174, 189, 201, 0.10)",
+          office: "rgba(217, 89, 38, 0.10)",
+        }[s.kind] ?? "rgba(255,255,255,0.05)";
+
+        ctx.fillStyle = fill;
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(x, y, w, h, 4 * dpr);
+        else ctx.rect(x, y, w, h);
+        ctx.fill();
+        ctx.strokeStyle = "rgba(160, 200, 230, 0.20)";
+        ctx.lineWidth = dpr;
+        ctx.setLineDash(s.kind === "entrance" ? [5 * dpr, 5 * dpr] : []);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Подпись помещения.
+        ctx.fillStyle = "rgba(200, 215, 228, 0.5)";
+        ctx.font = Math.max(9 * dpr, Math.min(13 * dpr, h * 0.16)) + "px ui-sans-serif, system-ui, sans-serif";
+        ctx.textBaseline = "top";
+        ctx.fillText((s.name ?? STATION_NAME[s.kind] ?? "").toUpperCase(), x + 5 * dpr, y + 4 * dpr);
+
+        // Остаток товара: полоска и число — это и есть «реальные данные».
+        if (s.capacity > 0) {
+          const share = Math.max(0, Math.min(s.stock / s.capacity, 1));
+          const barH = Math.max(3 * dpr, h * 0.06);
+          ctx.fillStyle = "rgba(0,0,0,0.35)";
+          ctx.fillRect(x + 5 * dpr, y + h - barH - 5 * dpr, w - 10 * dpr, barH);
+          ctx.fillStyle = COLORS.goods;
+          ctx.fillRect(x + 5 * dpr, y + h - barH - 5 * dpr, (w - 10 * dpr) * share, barH);
+
+          if (detailed || w > 60 * dpr) {
+            ctx.fillStyle = "rgba(230, 220, 205, 0.75)";
+            ctx.font = Math.max(9 * dpr, Math.min(12 * dpr, h * 0.14)) + "px ui-sans-serif, system-ui, sans-serif";
+            ctx.textBaseline = "bottom";
+            ctx.fillText(s.stock + " / " + s.capacity, x + 5 * dpr, y + h - barH - 8 * dpr);
+          }
+
+          // Коробки на полу склада и приёмки — чтобы товар было видно глазами.
+          if (s.kind === "dock" || s.kind === "warehouse") {
+            const boxes = Math.min(Math.round(s.stock / 4), 28);
+            const size = Math.max(2, scale * 1.1);
+            for (let i = 0; i < boxes; i++) {
+              const seed = hash(s.id + ":" + i);
+              // Сдвиг обязательно беззнаковый: в JS `>>` приводит число к int32,
+              // и для больших хешей коробки уезжали выше самой комнаты.
+              const bx = x + 8 * dpr + ((seed % 1000) / 1000) * (w - 16 * dpr - size);
+              const by = y + 16 * dpr + ((((seed >>> 10) % 1000) / 1000) * (h - 34 * dpr - size));
+              ctx.fillStyle = COLORS.goods;
+              ctx.globalAlpha = 0.75;
+              ctx.fillRect(bx, by, size, size * 0.8);
+              ctx.globalAlpha = 1;
+            }
+          }
+          // Товар на полке — рядком, как на витрине.
+          if (s.kind === "shelf") {
+            const items = Math.min(s.stock, 24);
+            const size = Math.max(2, scale * 0.9);
+            for (let i = 0; i < items; i++) {
+              const bx = x + 6 * dpr + (i % 12) * (size * 1.5);
+              const by = y + h * 0.42 + Math.floor(i / 12) * (size * 1.6);
+              if (bx + size > x + w - 6 * dpr) continue;
+              ctx.fillStyle = COLORS.goods;
+              ctx.globalAlpha = 0.85;
+              ctx.fillRect(bx, by, size, size * 1.2);
+              ctx.globalAlpha = 1;
+            }
+          }
+        }
+      }
+
       function draw() {
         const rect = canvas.getBoundingClientRect();
-        // Выше двух точек на пиксель разница не видна, а площадь холста растёт
-        // квадратично: на телефоне с dpr = 3 это вдвое лишняя работа каждый кадр.
         const dpr = Math.min(window.devicePixelRatio || 1, 2);
         const w = Math.round(rect.width * dpr);
         const h = Math.round(rect.height * dpr);
@@ -1655,9 +1385,6 @@
           canvas.height = h;
         }
 
-        // Камера: при zoom = 1 виден весь цех, дальше — приближение к точке,
-        // которую держим в центре экрана. Всё рисование идёт через sx/sy,
-        // поэтому приближение не требует отдельного кода нигде больше.
         if (followId && tracked.has(followId) && camera.zoom > 1.4) {
           const f = tracked.get(followId);
           camera.x += (f.toX - camera.x) * 0.08;
@@ -1665,7 +1392,7 @@
         }
         clampCamera();
 
-        const fit = Math.min(rect.width / world.width, rect.height / world.height) * dpr;
+        const fit = Math.min(rect.width / shop.width, rect.height / shop.height) * dpr;
         const scale = fit * camera.zoom;
         const ox = canvas.width / 2 - camera.x * scale;
         const oy = canvas.height / 2 - camera.y * scale;
@@ -1674,132 +1401,47 @@
         lastTransform = { ox, oy, scale, dpr };
         const now = performance.now();
 
-        // Человечков в лицо видно только вблизи: издали это была бы каша из
-        // ног и касок, да и рисовать две сотни фигурок каждый кадр незачем.
-        // Порог в 3.2 — это примерно 10 пикселей роста: меньше уже не человек,
-        // а пятно, и тогда честнее показать точку.
         const personPx = (scale * 0.6) / dpr;
         const detailed = personPx >= 3.2;
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Пол предприятия. Заливаем только видимую часть: при приближении
-        // прямоугольник мира в несколько раз больше экрана, а мягкое
-        // наложение текстуры по всей его площади — самая дорогая операция кадра.
+        // Пол. Заливаем только видимую часть: при приближении прямоугольник
+        // магазина в разы больше экрана.
         const floorX = Math.max(ox, 0);
         const floorY = Math.max(oy, 0);
-        const floorW = Math.min(ox + world.width * scale, canvas.width) - floorX;
-        const floorH = Math.min(oy + world.height * scale, canvas.height) - floorY;
+        const floorW = Math.min(ox + shop.width * scale, canvas.width) - floorX;
+        const floorH = Math.min(oy + shop.height * scale, canvas.height) - floorY;
         ctx.fillStyle = "#0e1318";
         ctx.fillRect(floorX, floorY, floorW, floorH);
         if (floorPattern) {
           ctx.save();
-          ctx.globalAlpha = 0.3;
+          ctx.globalAlpha = 0.28;
           ctx.globalCompositeOperation = "soft-light";
           ctx.fillStyle = floorPattern;
           ctx.fillRect(floorX, floorY, floorW, floorH);
           ctx.restore();
         }
 
-        // Забор и проходная — чистое украшение: на правила они не влияют,
-        // но без них территория выглядит просто тёмным квадратом.
         ctx.strokeStyle = "rgba(160, 200, 230, 0.10)";
         ctx.lineWidth = dpr;
         ctx.setLineDash([10 * dpr, 8 * dpr]);
-        ctx.strokeRect(sx(2), sy(2), (world.width - 4) * scale, (world.height - 4) * scale);
+        ctx.strokeRect(sx(1), sy(1), (shop.width - 2) * scale, (shop.height - 2) * scale);
         ctx.setLineDash([]);
-        ctx.fillStyle = "rgba(160, 200, 230, 0.06)";
-        ctx.fillRect(sx(44), sy(world.height - 4), 12 * scale, 3 * scale);
-        ctx.fillStyle = "rgba(174, 189, 201, 0.30)";
-        ctx.font = 10 * dpr + "px ui-sans-serif, system-ui, sans-serif";
-        ctx.textBaseline = "alphabetic";
-        ctx.fillText("ПРОХОДНАЯ", sx(44) + 4 * dpr, sy(world.height - 4) - 5 * dpr);
 
-        // Цех: круг, потому что именно по кругу считается укрытие в правилах.
-        for (const z of zones) {
-          const r = z.radius * scale;
-          const g = ctx.createRadialGradient(sx(z.x), sy(z.y), r * 0.2, sx(z.x), sy(z.y), r);
-          g.addColorStop(0, "rgba(25, 158, 112, 0.13)");
-          g.addColorStop(1, "rgba(25, 158, 112, 0.02)");
-          ctx.fillStyle = g;
-          ctx.beginPath();
-          ctx.arc(sx(z.x), sy(z.y), r, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.strokeStyle = "rgba(25, 158, 112, 0.30)";
-          ctx.lineWidth = dpr;
-          ctx.setLineDash([6 * dpr, 6 * dpr]);
-          ctx.stroke();
-          ctx.setLineDash([]);
-          ctx.fillStyle = "rgba(143, 240, 200, 0.35)";
-          ctx.font = 11 * dpr + "px ui-sans-serif, system-ui, sans-serif";
-          ctx.textBaseline = "alphabetic";
-          ctx.fillText("ЦЕХ", sx(z.x) - 12 * dpr, sy(z.y - z.radius) + 16 * dpr);
-        }
+        for (const s of stations) drawStation(s, sx, sy, scale, dpr, detailed);
 
-        // Станки.
-        for (const o of machines) {
-          ctx.fillStyle = COLORS.machine;
-          ctx.beginPath();
-          if (o.shape === "circle") ctx.arc(sx(o.x), sy(o.y), o.radius * scale, 0, Math.PI * 2);
-          else if (ctx.roundRect) ctx.roundRect(sx(o.x), sy(o.y), o.width * scale, o.height * scale, 3 * dpr);
-          else ctx.rect(sx(o.x), sy(o.y), o.width * scale, o.height * scale);
-          ctx.fill();
-          ctx.strokeStyle = "rgba(160, 200, 230, 0.16)";
-          ctx.lineWidth = dpr;
-          ctx.stroke();
-
-          // Вблизи станок — не просто плита: пара полос делает его станком.
-          if (detailed && o.shape === "rect") {
-            ctx.strokeStyle = "rgba(160, 200, 230, 0.10)";
-            ctx.beginPath();
-            for (let k = 1; k < 4; k++) {
-              const lx = sx(o.x + (o.width * k) / 4);
-              ctx.moveTo(lx, sy(o.y) + 2 * dpr);
-              ctx.lineTo(lx, sy(o.y + o.height) - 2 * dpr);
-            }
-            ctx.stroke();
-          }
-        }
-
-        // Задачи — маленькие бумажки на полу.
-        ctx.fillStyle = COLORS.task;
-        ctx.globalAlpha = 0.65;
-        for (const t of tasks) {
-          const s = Math.max(scale * 0.34, 1.4);
-          ctx.fillRect(sx(t.x) - s / 2, sy(t.y) - s / 2, s, s);
-        }
-        ctx.globalAlpha = 1;
-
-        // Люди. Вблизи — человечки, издали — точки: круг рабочий, квадрат
-        // начальник (форма, а не только цвет — так их различает и дальтоник).
-        // Рисуем сверху вниз, чтобы ближние фигурки перекрывали дальних.
+        // Люди. Рисуем сверху вниз, чтобы ближние перекрывали дальних.
         const progress = Math.min((now - tweenStart) / TWEEN_MS, 1);
         const people = [...tracked.entries()]
-          .map(([id, a]) => [id, a, a.fromY + (a.toY - a.fromY) * progress])
-          .sort((p, q) => p[2] - q[2]);
+          .map(([id, p]) => [id, p, p.fromY + (p.toY - p.fromY) * progress])
+          .sort((a, b) => a[2] - b[2]);
 
-        for (const [id, a, wy] of people) {
-          const wx = a.fromX + (a.toX - a.fromX) * progress;
-          const x = sx(wx);
+        for (const [id, p, wy] of people) {
+          const x = sx(p.fromX + (p.toX - p.fromX) * progress);
           const y = sy(wy);
-          const boss = isBoss(a.type);
-          const r = Math.max(scale * (boss ? 0.82 : 0.6), 2);
-
-          // За экраном при приближении может остаться почти весь цех —
-          // рисовать его незачем.
-          if (x < -r * 4 || y < -r * 6 || x > canvas.width + r * 4 || y > canvas.height + r * 4) {
-            continue;
-          }
-
-          if (boss && a.energy < SATIATED_AT) {
-            // Кольцо под ногами: у начальника нет премии, он ищет, с кого спросить.
-            ctx.strokeStyle = "rgba(217, 89, 38, 0.45)";
-            ctx.lineWidth = Math.max(dpr, scale * 0.12);
-            ctx.beginPath();
-            if (detailed) ctx.ellipse(x, y + r * 1.15, r * 1.5, r * 0.5, 0, 0, Math.PI * 2);
-            else ctx.arc(x, y, r * 2.1, 0, Math.PI * 2);
-            ctx.stroke();
-          }
+          const r = Math.max(scale * (p.role === "foreman" ? 0.72 : 0.62), 2);
+          if (x < -r * 4 || y < -r * 6 || x > canvas.width + r * 4 || y > canvas.height + r * 4) continue;
 
           if (id === selectedId) {
             ctx.strokeStyle = "#e9eef2";
@@ -1811,73 +1453,58 @@
           }
 
           if (detailed) {
-            const mind = minds.get(id);
-            drawPerson(x, y, r, a, mind ? mind.mood : "routine", now, dpr);
+            drawPerson(x, y, r, p, now, dpr);
             continue;
           }
 
-          const full = Math.max(0.15, Math.min(a.energy / (boss ? 200 : 140), 1));
-          ctx.globalAlpha = 0.35 + full * 0.65;
-          ctx.fillStyle = boss ? COLORS.boss : COLORS.worker;
+          // Издали — точка: у грузчика с коробками она золотится.
+          ctx.fillStyle = p.carry > 0 ? COLORS.goods : COLORS[p.role];
           ctx.beginPath();
-          if (boss) {
+          if (p.role === "foreman") {
             if (ctx.roundRect) ctx.roundRect(x - r, y - r, r * 2, r * 2, r * 0.45);
             else ctx.rect(x - r, y - r, r * 2, r * 2);
           } else {
             ctx.arc(x, y, r, 0, Math.PI * 2);
           }
           ctx.fill();
-
-          // Светлая точка по направлению движения — видно, куда человек идёт.
-          ctx.globalAlpha = 0.5 + full * 0.4;
-          ctx.fillStyle = boss ? "#ffb896" : "#8ff0c8";
-          ctx.beginPath();
-          ctx.arc(x + Math.cos(a.angle) * r * 0.55, y + Math.sin(a.angle) * r * 0.55, r * 0.4, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.globalAlpha = 1;
+          if (p.carry > 0) {
+            ctx.strokeStyle = COLORS[p.role];
+            ctx.lineWidth = Math.max(dpr, r * 0.4);
+            ctx.stroke();
+          }
         }
 
-        // Вспышки: пришёл новый человек / кого-то не стало.
+        // Вспышки: пришёл или ушёл покупатель.
         flashes = flashes.filter((f) => now - f.born < 900);
         for (const f of flashes) {
           const t = (now - f.born) / 900;
-          const r = scale * (0.6 + t * 2.2);
-          ctx.globalAlpha = (1 - t) * 0.7;
-          ctx.strokeStyle =
-            f.kind === "hire" ? "rgba(139, 240, 200, 0.9)"
-              : f.kind === "fired" ? "rgba(217, 89, 38, 0.9)"
-              : "rgba(255,255,255,0.7)";
-          ctx.lineWidth = Math.max(dpr, scale * 0.14);
+          ctx.globalAlpha = (1 - t) * 0.6;
+          ctx.strokeStyle = f.kind === "come" ? "rgba(174,189,201,0.9)" : "rgba(215,165,92,0.9)";
+          ctx.lineWidth = Math.max(dpr, scale * 0.12);
           ctx.beginPath();
-          ctx.arc(sx(f.x), sy(f.y), r, 0, Math.PI * 2);
+          ctx.arc(sx(f.x), sy(f.y), scale * (0.6 + t * 2.2), 0, Math.PI * 2);
           ctx.stroke();
           ctx.globalAlpha = 1;
         }
 
-        // Мысли прямо в цеху — у нескольких человек и у выбранного.
+        // Мысли — у нескольких человек и у выбранного.
         if (now - spotlightAt > 5000) {
           pickSpotlight(rect.width < 520);
           spotlightAt = now;
         }
-        // Выбранный человек говорит первым: его реплику мы обещали показать,
-        // а место на карте достаётся тому, кто нарисован раньше.
         const speaking = [...new Set([...(selectedId ? [selectedId] : []), ...spotlight])];
         const placed = [];
         const said = new Set();
         for (const id of speaking) {
-          const a = tracked.get(id);
+          const p = tracked.get(id);
           const mind = minds.get(id);
-          if (!a || !mind) continue;
-          // Одна и та же реплика дважды на экране читается как сбой отрисовки.
-          if (said.has(mind.thought)) continue;
+          if (!p || !mind || said.has(mind.thought)) continue;
           said.add(mind.thought);
-          const x = sx(a.fromX + (a.toX - a.fromX) * progress);
-          const y = sy(a.fromY + (a.toY - a.fromY) * progress);
-          drawBubble(x, y, mind.thought, mind.role, dpr, scale, placed);
+          const x = sx(p.fromX + (p.toX - p.fromX) * progress);
+          const y = sy(p.fromY + (p.toY - p.fromY) * progress);
+          drawBubble(x, y, mind.thought, COLORS[p.role], dpr, scale, placed);
         }
 
-        // Виньетка, чтобы край не выглядел обрезанным. Зависит только от
-        // размера холста, поэтому пересобираем её лишь при его изменении.
         if (!vignette || vignetteFor !== canvas.width + "x" + canvas.height) {
           vignette = ctx.createRadialGradient(
             canvas.width / 2, canvas.height / 2, Math.min(canvas.width, canvas.height) * 0.35,
@@ -1907,6 +1534,17 @@
         return n;
       };
 
+      // Продажи в базе накопительные, а интересна скорость: сколько продали
+      // между двумя снимками.
+      const series = () =>
+        history.map((p, i) => ({
+          at: p.snapshot_at,
+          shelves: p.shelves,
+          warehouse: p.warehouse,
+          queue: p.queue,
+          sold: i === 0 ? 0 : Math.max(0, p.sold_units - history[i - 1].sold_units),
+        }));
+
       function niceTicks(max) {
         const step = Math.max(1, Math.pow(10, Math.floor(Math.log10(max || 1))) / 2);
         const out = [];
@@ -1917,7 +1555,8 @@
 
       function drawChart() {
         chart.textContent = "";
-        if (history.length < 2) {
+        const data = series();
+        if (data.length < 2) {
           chart.appendChild(node("text", { x: 12, y: 24, class: "axis" }, "Ждём первых снимков…"));
           return;
         }
@@ -1927,65 +1566,65 @@
         const h = box.height || 240;
         chart.setAttribute("viewBox", `0 0 ${w} ${h}`);
 
-        const maxY = Math.max(10, ...history.map((p) => Math.max(p.herbivore_count, p.predator_count)));
-        const x = (i) => PAD.left + (i / (history.length - 1)) * (w - PAD.left - PAD.right);
+        const maxY = Math.max(10, ...data.map((p) => Math.max(p.shelves, p.sold, p.queue)));
+        const x = (i) => PAD.left + (i / (data.length - 1)) * (w - PAD.left - PAD.right);
         const y = (v) => h - PAD.bottom - (v / maxY) * (h - PAD.top - PAD.bottom);
-        chartGeom = { x, y, w, h, maxY };
+        chartGeom = { x, y, w, h, data };
 
         for (const t of niceTicks(maxY)) {
           chart.appendChild(node("line", { class: "grid", x1: PAD.left, x2: w - PAD.right, y1: y(t), y2: y(t) }));
           chart.appendChild(node("text", { class: "axis", x: 4, y: y(t) + 4 }, String(Math.round(t))));
         }
 
-        const first = new Date(history[0].snapshot_at);
-        const last = new Date(history[history.length - 1].snapshot_at);
         const hm = (d) => String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
-        chart.appendChild(node("text", { class: "axis", x: PAD.left, y: h - 6 }, hm(first)));
-        chart.appendChild(node("text", { class: "axis", x: w - PAD.right, y: h - 6, "text-anchor": "end" }, hm(last)));
+        chart.appendChild(node("text", { class: "axis", x: PAD.left, y: h - 6 }, hm(new Date(data[0].at))));
+        chart.appendChild(node("text", {
+          class: "axis", x: w - PAD.right, y: h - 6, "text-anchor": "end",
+        }, hm(new Date(data[data.length - 1].at))));
 
         for (const s of [
-          { key: "herbivore_count", color: COLORS.worker },
-          { key: "predator_count", color: COLORS.boss },
+          { key: "shelves", color: COLORS.goods },
+          { key: "sold", color: COLORS.carrier_in },
+          { key: "queue", color: COLORS.foreman },
         ]) {
-          const d = history.map((p, i) => (i ? "L" : "M") + x(i) + " " + y(p[s.key])).join(" ");
+          const d = data.map((p, i) => (i ? "L" : "M") + x(i) + " " + y(p[s.key])).join(" ");
           chart.appendChild(node("path", { class: "line", d, stroke: s.color }));
-          const lastValue = history[history.length - 1][s.key];
-          chart.appendChild(
-            node("text", { class: "end-label", x: w - PAD.right + 8, y: y(lastValue) + 4, fill: s.color },
-              String(lastValue)),
-          );
+          chart.appendChild(node("text", {
+            class: "end-label", x: w - PAD.right + 8, y: y(data[data.length - 1][s.key]) + 4, fill: s.color,
+          }, String(data[data.length - 1][s.key])));
         }
       }
 
       const tooltip = el("tooltip");
       const chartWrap = document.querySelector(".chart-wrap");
       chartWrap.addEventListener("pointermove", (e) => {
-        if (!chartGeom || history.length < 2) return;
+        if (!chartGeom || chartGeom.data.length < 2) return;
+        const data = chartGeom.data;
         const box = chart.getBoundingClientRect();
         const px = e.clientX - box.left;
-        const i = Math.max(0, Math.min(history.length - 1,
-          Math.round(((px - PAD.left) / (chartGeom.w - PAD.left - PAD.right)) * (history.length - 1))));
-        const p = history[i];
+        const i = Math.max(0, Math.min(data.length - 1,
+          Math.round(((px - PAD.left) / (chartGeom.w - PAD.left - PAD.right)) * (data.length - 1))));
+        const p = data[i];
         chart.querySelectorAll(".crosshair, .hover-dot").forEach((n) => n.remove());
         chart.appendChild(node("line", {
-          class: "crosshair", x1: chartGeom.x(i), x2: chartGeom.x(i),
-          y1: PAD.top, y2: chartGeom.h - PAD.bottom,
+          class: "crosshair", x1: chartGeom.x(i), x2: chartGeom.x(i), y1: PAD.top, y2: chartGeom.h - PAD.bottom,
         }));
         for (const s of [
-          { key: "herbivore_count", color: COLORS.worker },
-          { key: "predator_count", color: COLORS.boss },
+          { key: "shelves", color: COLORS.goods },
+          { key: "sold", color: COLORS.carrier_in },
+          { key: "queue", color: COLORS.foreman },
         ]) {
           chart.appendChild(node("circle", {
             class: "hover-dot", cx: chartGeom.x(i), cy: chartGeom.y(p[s.key]),
             r: 4, fill: s.color, stroke: "#14181d", "stroke-width": 2,
           }));
         }
-        const t = new Date(p.snapshot_at);
+        const t = new Date(p.at);
         tooltip.innerHTML =
           String(t.getHours()).padStart(2, "0") + ":" + String(t.getMinutes()).padStart(2, "0") +
-          " · рабочие <b>" + p.herbivore_count + "</b> · начальники <b>" + p.predator_count + "</b>";
+          " · полки <b>" + p.shelves + "</b> · продано <b>" + p.sold + "</b> · очередь <b>" + p.queue + "</b>";
         tooltip.style.opacity = "1";
-        tooltip.style.left = Math.min(chartGeom.x(i) + 12, chartGeom.w - 210) + "px";
+        tooltip.style.left = Math.min(chartGeom.x(i) + 12, chartGeom.w - 230) + "px";
         tooltip.style.top = "8px";
       });
       chartWrap.addEventListener("pointerleave", () => {
@@ -1996,12 +1635,12 @@
       function drawTable() {
         const body = el("table").querySelector("tbody");
         body.textContent = "";
-        for (const p of history.slice(-20).reverse()) {
-          const t = new Date(p.snapshot_at);
+        for (const p of series().slice(-20).reverse()) {
+          const t = new Date(p.at);
           const tr = document.createElement("tr");
           tr.innerHTML =
             "<td>" + String(t.getHours()).padStart(2, "0") + ":" + String(t.getMinutes()).padStart(2, "0") + "</td>" +
-            "<td>" + p.herbivore_count + "</td><td>" + p.predator_count + "</td><td>" + p.food_count + "</td>";
+            "<td>" + p.shelves + "</td><td>" + p.warehouse + "</td><td>" + p.sold + "</td><td>" + p.queue + "</td>";
           body.appendChild(tr);
         }
       }
@@ -2014,46 +1653,7 @@
 
       window.addEventListener("resize", drawChart);
 
-      /* ================= вмешательство ================= */
-
-      const statusNode = el("status");
-
-      function setStatus(text, kind) {
-        statusNode.textContent = text;
-        statusNode.className = "status" + (kind ? " " + kind : "");
-      }
-
-      async function act(fn, args, describe) {
-        const buttons = document.querySelectorAll(".tool, .danger");
-        buttons.forEach((b) => (b.disabled = true));
-        setStatus("…", null);
-        try {
-          const data = await rpc(fn, args);
-          setStatus(describe(data), "good");
-          await Promise.all([refresh(), loadMap(), loadJournal()]);
-        } catch (e) {
-          setStatus(e && e.message ? e.message : String(e), "bad");
-        } finally {
-          buttons.forEach((b) => (b.disabled = false));
-        }
-      }
-
-      document.querySelectorAll(".tool").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          tool = btn.dataset.tool;
-          document.querySelectorAll(".tool").forEach((b) =>
-            b.setAttribute("aria-pressed", String(b === btn)),
-          );
-          setStatus(
-            tool === "look"
-              ? "Нажмите на человечка — покажу, кто это и о чём он думает."
-              : "Нажмите на цех: " + btn.textContent.toLowerCase(),
-            null,
-          );
-        });
-      });
-
-      /* ---------- приближение, перетаскивание, выбор человека ---------- */
+      /* ================= приближение и выбор ================= */
 
       function worldAt(clientX, clientY) {
         const rect = canvas.getBoundingClientRect();
@@ -2067,9 +1667,6 @@
       function updateZoomUI() {
         const close = camera.zoom > 1.01;
         el("zoom-hint").hidden = close;
-        // Пока цех виден целиком, страница должна листаться пальцем как обычно;
-        // жесты перехватываем только когда приближено — иначе на телефоне
-        // невозможно прокрутить страницу мимо большой карты.
         canvas.classList.toggle("grabbing", close);
         el("follow").hidden = !(close && followId && tracked.has(followId));
         if (!el("follow").hidden) {
@@ -2083,7 +1680,6 @@
         const p = worldAt(clientX, clientY);
         const next = Math.min(Math.max(camera.zoom * factor, 1), MAX_ZOOM);
         const k = next / camera.zoom;
-        // Точка под пальцем должна остаться на месте, иначе приближение «уезжает».
         camera.x = p.x - (p.x - camera.x) / k;
         camera.y = p.y - (p.y - camera.y) / k;
         camera.zoom = next;
@@ -2122,12 +1718,11 @@
         pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
         if (pointers.size === 2) {
-          // Два пальца: щипок приближает, а их общий сдвиг двигает цех.
           const [a, b] = [...pointers.values()];
           const d = Math.hypot(a.x - b.x, a.y - b.y);
           const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
           if (pinchDist > 0 && d > 0) zoomAt(mid.x, mid.y, d / pinchDist);
-          if (pinchMid && lastTransform && camera.zoom > 1.01) {
+          if (pinchMid && camera.zoom > 1.01) {
             const { scale, dpr } = lastTransform;
             camera.x -= ((mid.x - pinchMid.x) * dpr) / scale;
             camera.y -= ((mid.y - pinchMid.y) * dpr) / scale;
@@ -2140,16 +1735,14 @@
           return;
         }
 
-        // Одним пальцем по карте человек листает страницу, а не двигает цех —
-        // иначе прокрутить страницу мимо карты становится невозможно.
-        // Мышью тащить можно: у мыши есть колесо и отдельная кнопка.
+        // Одним пальцем человек листает страницу; мышью — двигает магазин.
         if (e.pointerType === "touch") return;
-        if (camera.zoom <= 1.01) return; // на общем виде двигать нечего
+        if (camera.zoom <= 1.01) return;
         if (Math.abs(dx) > 2 || Math.abs(dy) > 2) dragged = true;
         const { scale, dpr } = lastTransform;
         camera.x -= (dx * dpr) / scale;
         camera.y -= (dy * dpr) / scale;
-        followId = null; // человек взял камеру в свои руки
+        followId = null;
         clampCamera();
         updateZoomUI();
       });
@@ -2165,8 +1758,6 @@
       canvas.addEventListener("pointerup", (e) => {
         endPointer(e);
         if (dragged) return;
-
-        // Два быстрых нажатия подряд — приблизиться к этому месту.
         const now = Date.now();
         if (now - lastTapAt < 320) {
           lastTapAt = 0;
@@ -2180,44 +1771,30 @@
       function handleTap(e) {
         if (!lastTransform) return;
         const { x, y } = worldAt(e.clientX, e.clientY);
-        if (x < 0 || y < 0 || x > world.width || y > world.height) {
-          setStatus("Это за территорией предприятия.", "bad");
+        if (x < 0 || y < 0 || x > shop.width || y > shop.height) {
+          setStatus("Это за стенами магазина.", "bad");
           return;
         }
 
-        if (tool === "look") {
-          // Берём ближайшего в разумном радиусе: на телефоне палец толстый,
-          // а вблизи попасть легче — радиус уменьшается вместе с приближением.
-          let best = null;
-          let bestDist = 4 / Math.sqrt(camera.zoom);
-          for (const [id, a] of tracked) {
-            const d = dist(x, y, a.toX, a.toY);
-            if (d < bestDist) {
-              bestDist = d;
-              best = id;
-            }
+        let best = null;
+        let bestDist = 4 / Math.sqrt(camera.zoom);
+        for (const [id, p] of tracked) {
+          const d = dist(x, y, p.toX, p.toY);
+          if (d < bestDist) {
+            bestDist = d;
+            best = id;
           }
-          selectedId = best;
-          if (best && camera.zoom > 1.4) followId = best;
-          renderCard();
-          updateZoomUI();
-          const mind = best ? minds.get(best) : null;
-          setStatus(
-            mind ? mind.name + ": «" + mind.thought + "»" : "Здесь никого нет — нажмите прямо на человечка.",
-            mind ? "good" : null,
-          );
-          return;
         }
-
-        if (tool === "feed") {
-          act("feed_world", { p_x: x, p_y: y, p_amount: 12 }, (n) => "Подкинул задач: " + n);
-        } else if (tool === "obstacle") {
-          act("toggle_obstacle", { p_x: x, p_y: y }, (r) =>
-            r === "added" ? "Станок поставлен" : "Станок убран");
-        } else {
-          act("spawn_agent", { p_type: tool, p_x: x, p_y: y }, () =>
-            tool === "predator" ? "Назначен новый начальник" : "Принят на работу");
-        }
+        selectedId = best;
+        if (best && camera.zoom > 1.4) followId = best;
+        renderCard();
+        updateZoomUI();
+        const p = best ? tracked.get(best) : null;
+        const mind = best ? minds.get(best) : null;
+        setStatus(
+          mind && p ? mind.name + " · " + ROLE_NAME[p.role] + " · " + p.state : "Здесь никого нет.",
+          mind ? "good" : null,
+        );
       }
 
       const centerOf = () => {
@@ -2228,8 +1805,8 @@
       el("zoom-out").addEventListener("click", () => zoomAt(...centerOf(), 1 / 1.7));
       el("zoom-reset").addEventListener("click", () => {
         camera.zoom = 1;
-        camera.x = world.width / 2;
-        camera.y = world.height / 2;
+        camera.x = shop.width / 2;
+        camera.y = shop.height / 2;
         followId = null;
         updateZoomUI();
       });
@@ -2238,30 +1815,75 @@
         updateZoomUI();
       });
 
-      el("drought").addEventListener("click", () => {
-        if (!confirm("Срыв поставок: из цеха исчезнет около 60% задач. Продолжить?")) return;
-        act("cataclysm", { p_kind: "drought" }, (n) => "Срыв поставок: задач стало меньше на " + n);
+      /* ================= вмешательство ================= */
+
+      const statusNode = el("status");
+      function setStatus(text, kind) {
+        statusNode.textContent = text;
+        statusNode.className = "status" + (kind ? " " + kind : "");
+      }
+
+      async function act(fn, args, describe) {
+        const buttons = document.querySelectorAll(".tool, .danger, .primary");
+        buttons.forEach((b) => (b.disabled = true));
+        setStatus("…", null);
+        try {
+          const data = await rpc(fn, args);
+          setStatus(describe(data), "good");
+          await Promise.all([refresh(), loadJournal(), loadOrders()]);
+        } catch (e) {
+          setStatus(e && e.message ? e.message : String(e), "bad");
+        } finally {
+          buttons.forEach((b) => (b.disabled = false));
+        }
+      }
+
+      el("truck").addEventListener("click", () =>
+        act("call_truck", {}, (n) => "Фура разгружена, на приёмке " + n + " коробок"));
+
+      el("doors").addEventListener("click", () =>
+        act("open_doors", { p_count: 4 }, (n) => "В магазин зашли " + n + " покупателей"));
+
+      el("hire").addEventListener("click", () =>
+        act("hire", { p_role: el("role").value }, () =>
+          "Принят на работу: " + ROLE_NAME[el("role").value]));
+
+      el("fire").addEventListener("click", () => {
+        const role = el("role").value;
+        if (!confirm("Уволить одного: " + ROLE_NAME[role] + "?")) return;
+        act("dismiss", { p_role: role }, () => "Уволен: " + ROLE_NAME[role]);
       });
 
-      el("plague").addEventListener("click", () => {
-        if (!confirm("Сокращение: предприятие покинет около 30% людей. Продолжить?")) return;
-        act("cataclysm", { p_kind: "plague" }, (n) => "Сокращение: уволено " + n);
+      const ORDER_LABEL = {
+        unload: "все на разгрузку: возить с приёмки на склад",
+        shelves: "все на полки: возить со склада в зал",
+        break: "перерыв",
+        rush: "работать без перерыва",
+        easy: "бригадиры не трогают людей",
+      };
+
+      document.querySelectorAll("[data-order]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const kind = btn.dataset.order;
+          act("issue_order", { p_side: "staff", p_kind: kind, p_command: btn.textContent, p_seconds: 120 },
+            () => (kind === "cancel" ? "Отбой — работают как обычно" : "Сказано: " + ORDER_LABEL[kind]));
+        });
       });
 
       const JOURNAL = {
-        feed: (d) => "подкинули задач · " + (d.amount ?? "?"),
-        spawn: (d) => (isBoss(d.type) ? "назначен начальник" : "принят рабочий"),
-        obstacle_added: () => "поставили станок",
-        obstacle_removed: () => "убрали станок",
-        cataclysm: (d) => (d.kind === "plague" ? "сокращение" : "срыв поставок") + " · −" + (d.removed ?? 0),
-        order: (d) => "сказали " + (isBoss(d.species) ? "начальникам" : "рабочим") + ": " + (KIND_SHORT[d.kind] ?? d.kind),
-        order_cancelled: (d) => "отбой (" + (isBoss(d.species) ? "начальники" : "рабочие") + ")",
+        truck: (d) => "приехала фура · на приёмке " + (d.dock ?? "?"),
+        hire: (d) => "принят " + (ROLE_NAME[d.role] ?? d.role),
+        dismiss: (d) => "уволен " + (ROLE_NAME[d.role] ?? d.role),
+        doors: (d) => "зашли покупатели · " + (d.count ?? "?"),
+        order: (d) => "распоряжение: " + (ORDER_LABEL[d.kind] ?? d.kind),
+        order_cancelled: () => "отбой",
       };
 
-      function renderJournal(rows) {
+      async function loadJournal() {
+        const rows = await select("intervention_log", "select=action,detail,at&order=id.desc&limit=8");
         const list = el("journal");
         list.textContent = "";
-        for (const row of rows) {
+        for (const row of rows ?? []) {
           const describe = JOURNAL[row.action];
           const time = new Date(row.at);
           const li = document.createElement("li");
@@ -2273,175 +1895,78 @@
         }
       }
 
-      async function loadJournal() {
-        const rows = await select("intervention_log", "select=action,detail,at&order=id.desc&limit=8");
-        renderJournal(rows ?? []);
-      }
-
-      /* ================= распоряжения ================= */
-
-      // Правила мира понимают пять примитивов поведения. Текст в примитив
-      // превращает Edge Function "command" через Claude — а если ключа нет,
-      // разбираем сами, по ключевым словам: грубее, зато всегда и бесплатно.
-      const RULES = [
-        { kind: "cancel", re: /отмен|отбой|как обычно|как раньше|свобод|разойд|хватит|забуд|работаем как/ },
-        { kind: "mob", re: /бастуй|забастов|стачк|выживи|выжив|уволь|выгн|уб[еи]й|убив|атак|напад|окруж|обступ|толп|заби|задав|отомст|бунт|восста/ },
-        { kind: "flee", re: /пряч|прята|бег|разбеж|убега|спаса|врассып|отступ|уход|драп|скрой/ },
-        { kind: "gather", re: /собер|собрат|собир|вместе|куч|сомкн|\bстройс|сойд|планёр|планер|летучк|собрани|митинг|центр/ },
-        { kind: "hunt", re: /контрол|провер|надзор|обход|дави|гоня|лови|догон|загон|преслед|спрашивай|строж/ },
-        { kind: "rest", re: /перекур|обед|отдых|сто[йя]|замри|не двиг|ждит|подожд|привал|перерыв|кабинет/ },
-      ];
-
-      const KIND_LABEL = {
-        mob: "забастовка: обступить одного начальника и додавить числом",
-        flee: "прятаться и расходиться по углам",
-        gather: "сбор в одной точке",
-        hunt: "тотальный контроль: спрашивать со всех без передышки",
-        rest: "перекур: стоять и копить силы",
-      };
-      const KIND_SHORT = {
-        mob: "забастовка",
-        flee: "прятаться",
-        gather: "сбор",
-        hunt: "тотальный контроль",
-        rest: "перекур",
-      };
-
-      function parseByKeywords(species, text) {
-        const lower = text.toLowerCase();
-        for (const rule of RULES) {
-          if (!rule.re.test(lower)) continue;
-
-          // Приказ, недоступный этой стороне, — отказ, а не молчаливая замена:
-          // иначе человек не поймёт, что именно произошло.
-          if (rule.kind === "mob" && isBoss(species)) {
-            return { error: "Бастовать могут только рабочие — выберите «Рабочим»." };
-          }
-          if (rule.kind === "hunt" && !isBoss(species)) {
-            return { error: "Спрашивать со всех могут только начальники — выберите «Начальникам»." };
-          }
-
-          const params = {};
-          if (rule.kind === "gather" || rule.kind === "flee") {
-            const point = lower.match(/(\d{1,3})\D{1,4}(\d{1,3})/);
-            if (point) {
-              params.x = Math.min(100, Number(point[1]));
-              params.y = Math.min(100, Number(point[2]));
-            } else if (/центр|середин|цех/.test(lower)) {
-              params.x = 50;
-              params.y = 50;
-            }
-          }
-          return { kind: rule.kind, params, seconds: rule.kind === "rest" ? 45 : 75 };
-        }
-        return null;
-      }
-
-      function renderOrders(rows) {
+      function renderOrders() {
         const list = el("orders");
         list.textContent = "";
-        orderByRole = { worker: null, boss: null };
-        for (const row of rows) {
-          const role = roleOf(row.species);
-          orderByRole[role] = row.kind;
+        for (const row of orders) {
           const left = Math.max(0, Math.round((new Date(row.expires_at) - Date.now()) / 1000));
           const li = document.createElement("li");
-          li.className = role;
-          li.innerHTML =
-            "<span><b>" + (role === "boss" ? "Начальники" : "Рабочие") + "</b> · " +
-            (KIND_LABEL[row.kind] ?? row.kind) + " · " + left + " с</span>";
+          li.innerHTML = "<span>" + (ORDER_LABEL[row.kind] ?? row.kind) + " · " + left + " с</span>";
           const cancel = document.createElement("button");
           cancel.type = "button";
           cancel.title = "Отменить";
           cancel.textContent = "×";
           cancel.addEventListener("click", () =>
-            act("issue_order", { p_species: row.species, p_kind: "cancel" }, () => "Отбой"),
-          );
+            act("issue_order", { p_side: row.side, p_kind: "cancel" }, () => "Отбой"));
           li.appendChild(cancel);
           list.appendChild(li);
         }
       }
 
-      let orders = [];
-
       async function loadOrders() {
         const rows = await select(
           "orders",
-          "select=species,kind,command,expires_at&expires_at=gt." + new Date().toISOString(),
+          "select=side,kind,command,expires_at&expires_at=gt." + new Date().toISOString(),
         );
         orders = rows ?? [];
-        renderOrders(orders);
+        renderOrders();
+      }
+
+      /* ---------- распоряжения словами ---------- */
+
+      // Правила понимают пять распоряжений. Текст разбираем по ключевым словам:
+      // грубо, зато всегда, бесплатно и без единого обращения наружу.
+      const RULES = [
+        { kind: "cancel", re: /отмен|отбой|как обычно|как раньше|свобод|хватит|забуд|работаем как/ },
+        { kind: "break", re: /перерыв|обед|отдых|передохн|перекур|кухн|устал/ },
+        { kind: "rush", re: /без перерыв|не отдыха|работать|работаем|быстрее|шевел|давай|аврал/ },
+        { kind: "unload", re: /разгруз|приёмк|приемк|фур|склад завал|на склад/ },
+        { kind: "shelves", re: /полк|в зал|витрин|выклад|зал пуст/ },
+        { kind: "easy", re: /отстан|не трогай|не приста|оставь|дайте работать|спокойн/ },
+      ];
+
+      function parseByKeywords(text) {
+        const lower = text.toLowerCase();
+        for (const rule of RULES) if (rule.re.test(lower)) return rule.kind;
+        return null;
       }
 
       async function sendCommand() {
-        const species = el("species").value;
         const text = el("command").value.trim();
         if (text.length < 2) {
-          setStatus("Напишите словами — например «прячьтесь за станки».", "bad");
+          setStatus("Напишите словами — например «все на полки».", "bad");
           return;
         }
-
-        const button = el("send");
-        button.disabled = true;
-        setStatus("Разбираю сказанное…", null);
-
-        try {
-          const answer = await invoke("command", { species, text }).catch(() => null);
-
-          if (answer && answer.understood) {
-            setStatus("Понял так: " + answer.explain, "good");
-            el("command").value = "";
-            await Promise.all([loadOrders(), loadJournal()]);
-            return;
-          }
-
-          const parsed = parseByKeywords(species, text);
-          if (parsed && parsed.error) {
-            setStatus(parsed.error, "bad");
-            return;
-          }
-          if (!parsed) {
-            setStatus(
-              "Не понял. Попробуйте по-другому: «бастуйте, обступите начальника», " +
-                "«прячьтесь за станки», «все на планёрку в центр», «перекур», «отбой».",
-              "bad",
-            );
-            return;
-          }
-
-          const data = await rpc("issue_order", {
-            p_species: species,
-            p_kind: parsed.kind,
-            p_params: parsed.params,
-            p_command: text,
-            p_seconds: parsed.seconds,
-            p_source: "keywords",
-          });
-
+        const kind = parseByKeywords(text);
+        if (!kind) {
           setStatus(
-            parsed.kind === "cancel"
-              ? "Отбой — люди работают как обычно."
-              : "Понял так (по ключевым словам): " + KIND_LABEL[parsed.kind] + ".",
-            "good",
+            "Не понял. Попробуйте: «все на разгрузку», «все на полки», «перерыв», " +
+              "«работаем без перерыва», «бригадиры, отстаньте», «отбой».",
+            "bad",
           );
-          el("command").value = "";
-          await Promise.all([loadOrders(), loadJournal()]);
-          if (!data && parsed.kind !== "cancel") setStatus("Распоряжение не применилось", "bad");
-        } catch (e) {
-          setStatus(e && e.message ? e.message : String(e), "bad");
-        } finally {
-          button.disabled = false;
+          return;
         }
+        el("command").value = "";
+        await act("issue_order", { p_side: "staff", p_kind: kind, p_command: text, p_seconds: 120 },
+          () => (kind === "cancel" ? "Отбой — работают как обычно" : "Понял так: " + ORDER_LABEL[kind]));
       }
 
       el("send").addEventListener("click", sendCommand);
       el("command").addEventListener("keydown", (e) => {
         if (e.key === "Enter") sendCommand();
       });
-
       document.querySelectorAll("#examples button").forEach((b) => {
         b.addEventListener("click", () => {
-          el("species").value = b.dataset.species;
           el("command").value = b.textContent;
           sendCommand();
         });
@@ -2450,45 +1975,28 @@
       /* ================= запуск ================= */
 
       async function start() {
-        await loadMap();
         await refresh();
-        think();
-        camera.x = world.width / 2;
-        camera.y = world.height / 2;
-        // На телефоне весь цех помещается в ладонь, и человек в нём — три
-        // пикселя. Узкий экран открываем сразу приближённым к цеху: увидеть
-        // людей важнее, чем забор по краям. Кнопка «Весь цех» рядом.
-        if (canvas.getBoundingClientRect().width < 520) {
-          const shop = zones[0];
-          if (shop) {
-            camera.x = shop.x;
-            camera.y = shop.y;
-          }
-          camera.zoom = 1.9;
-        }
+        camera.x = shop.width / 2;
+        camera.y = shop.height / 2;
+        // Открываем магазин целиком — даже на телефоне: смысл картинки в том,
+        // как товар идёт от приёмки к кассе, а это видно только целиком.
+        // Человечков в лицо показывает приближение.
         clampCamera();
         updateZoomUI();
         requestAnimationFrame(draw);
 
         await Promise.allSettled([loadHistory(), loadJournal(), loadOrders()]);
+        renderCloud();
 
-        setInterval(() => refresh().catch(() => {}), FALLBACK_POLL_MS);
+        setInterval(() => refresh().catch(() => {}), POLL_MS);
         setInterval(() => loadHistory().catch(() => {}), 60000);
         setInterval(() => loadJournal().catch(() => {}), 20000);
         setInterval(() => loadOrders().catch(() => {}), 15000);
-        setInterval(() => setPulse(world.last_tick_at), 1000);
-        // Мысли пересчитываем реже, чем рисуем: это O(рабочие × начальники),
-        // и каждый кадр так считать незачем — настроение меняется медленнее.
-        setInterval(think, 1500);
-        setInterval(() => {
-          renderCloud("worker");
-          renderCloud("boss");
-        }, 4000);
-        renderCloud("worker");
-        renderCloud("boss");
+        setInterval(() => setPulse(shop.last_tick_at), 1000);
+        setInterval(() => { refreshMinds(); renderCloud(); }, 4000);
         setInterval(() => {
           orders = orders.filter((o) => new Date(o.expires_at) > Date.now());
-          renderOrders(orders);
+          renderOrders();
         }, 1000);
       }
 
