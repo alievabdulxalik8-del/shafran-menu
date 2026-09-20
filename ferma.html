@@ -1,0 +1,1331 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Пиксель-ферма 2.0</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0b100d;
+        --panel: #141b17;
+        --panel-2: #101713;
+        --line: #1f2c25;
+        --text: #e8efe9;
+        --text-2: #93a89c;
+        --text-3: #6d8179;
+        /* Цвет = вид. Пара проверена валидатором на контраст и дальтонизм. */
+        --herb: #199e70;
+        --pred: #d95926;
+        --food: #7bd88f;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        background:
+          radial-gradient(1200px 600px at 50% -10%, #15211b 0%, transparent 60%),
+          var(--bg);
+        color: var(--text);
+        font-family: ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .app {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 28px 16px 48px;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+
+      header h1 {
+        margin: 0;
+        font-size: 24px;
+        letter-spacing: -0.01em;
+      }
+
+      .subtitle {
+        margin: 6px 0 0;
+        color: var(--text-2);
+        font-size: 14px;
+        max-width: 60ch;
+      }
+
+      .pulse {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 12px;
+        color: var(--text-2);
+        padding: 4px 10px 4px 8px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: var(--panel);
+        white-space: nowrap;
+      }
+      .pulse i {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--herb);
+        box-shadow: 0 0 0 0 rgba(25, 158, 112, 0.6);
+        animation: beat 3s ease-out infinite;
+      }
+      .pulse.stale i { background: #d9a526; animation: none; }
+      @keyframes beat {
+        0% { box-shadow: 0 0 0 0 rgba(25, 158, 112, 0.5); }
+        70% { box-shadow: 0 0 0 9px rgba(25, 158, 112, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(25, 158, 112, 0); }
+      }
+
+      .top {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        align-items: flex-start;
+        justify-content: space-between;
+      }
+
+      .tiles {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+        gap: 10px;
+      }
+
+      .tile {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 10px 12px;
+      }
+      .tile .k {
+        color: var(--text-3);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .tile .v {
+        margin-top: 4px;
+        font-size: 22px;
+        font-variant-numeric: tabular-nums;
+      }
+      .tile .v small { font-size: 12px; color: var(--text-3); }
+      .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+      .dot.herb { background: var(--herb); }
+      .dot.pred { background: var(--pred); }
+
+      .stage {
+        position: relative;
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        background: var(--panel-2);
+      }
+      canvas#world { display: block; width: 100%; aspect-ratio: 1 / 1; max-height: 72vh; }
+
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        color: var(--text-2);
+        font-size: 12.5px;
+        align-items: center;
+      }
+      .legend span { display: inline-flex; align-items: center; gap: 7px; }
+      .swatch { width: 10px; height: 10px; border-radius: 50%; }
+      .swatch.sq { border-radius: 2px; width: 8px; height: 8px; }
+      .swatch.stone { background: #1b2620; border: 1px solid #2b3a33; border-radius: 3px; width: 12px; height: 9px; }
+      .swatch.zone { background: rgba(25, 158, 112, 0.28); border: 1px solid rgba(25,158,112,.5); }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 16px 16px 8px;
+      }
+      .panel h2 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text);
+      }
+      .panel .hint { margin: 4px 0 10px; color: var(--text-3); font-size: 12px; }
+
+      .chart-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .chart-legend { display: flex; gap: 14px; font-size: 12.5px; color: var(--text-2); }
+      .chart-legend span { display: inline-flex; align-items: center; gap: 7px; }
+
+      .toggle {
+        background: transparent;
+        border: 1px solid var(--line);
+        color: var(--text-2);
+        border-radius: 8px;
+        padding: 5px 10px;
+        font-size: 12px;
+        cursor: pointer;
+      }
+      .toggle:hover { color: var(--text); border-color: #2c3d34; }
+
+      svg#chart { display: block; width: 100%; height: 240px; }
+      svg#chart .grid { stroke: #1c2822; stroke-width: 1; }
+      svg#chart .axis { fill: var(--text-3); font-size: 11px; }
+      svg#chart .line { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+      svg#chart .end-label { font-size: 11.5px; font-weight: 600; }
+      svg#chart .crosshair { stroke: #38493f; stroke-width: 1; stroke-dasharray: 3 3; }
+
+      .tooltip {
+        position: absolute;
+        pointer-events: none;
+        background: #0c1410;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 7px 9px;
+        font-size: 12px;
+        color: var(--text);
+        white-space: nowrap;
+        opacity: 0;
+        transition: opacity 0.12s;
+        z-index: 3;
+      }
+      .chart-wrap { position: relative; }
+
+      table.data {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12.5px;
+        font-variant-numeric: tabular-nums;
+        margin-bottom: 12px;
+      }
+      table.data th, table.data td {
+        text-align: right;
+        padding: 5px 8px;
+        border-bottom: 1px solid var(--line);
+      }
+      table.data th:first-child, table.data td:first-child { text-align: left; color: var(--text-2); }
+      table.data th { color: var(--text-3); font-weight: 500; }
+      [hidden] { display: none !important; }
+
+      .tools-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 18px;
+        align-items: center;
+      }
+      .tool-group { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+      .tool-label { color: var(--text-3); font-size: 12px; margin-right: 2px; }
+
+      .tool, .danger {
+        background: var(--panel-2);
+        border: 1px solid var(--line);
+        color: var(--text-2);
+        border-radius: 9px;
+        padding: 7px 12px;
+        font-size: 13px;
+        cursor: pointer;
+        transition: border-color 0.12s, color 0.12s, background 0.12s;
+      }
+      .tool:hover, .danger:hover { color: var(--text); border-color: #2f4239; }
+      .tool[aria-pressed="true"] {
+        color: #0b100d;
+        background: var(--herb);
+        border-color: var(--herb);
+        font-weight: 600;
+      }
+      .danger { border-color: #4a2a1e; color: #e8a07e; }
+      .danger:hover { background: #2a1610; border-color: var(--pred); color: #ffc7a8; }
+      button:disabled { opacity: 0.5; cursor: progress; }
+
+      .command-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+        margin-top: 14px;
+        padding-top: 14px;
+        border-top: 1px solid var(--line);
+      }
+      .command-row input[type="text"] {
+        flex: 1 1 320px;
+        min-width: 0;
+        background: var(--panel-2);
+        border: 1px solid var(--line);
+        color: var(--text);
+        border-radius: 9px;
+        padding: 9px 12px;
+        font-size: 13px;
+        font-family: inherit;
+      }
+      .command-row input[type="text"]:focus {
+        outline: none;
+        border-color: #3a5147;
+      }
+      .command-row select {
+        background: var(--panel-2);
+        border: 1px solid var(--line);
+        color: var(--text-2);
+        border-radius: 9px;
+        padding: 9px 10px;
+        font-size: 13px;
+        font-family: inherit;
+      }
+      .primary {
+        background: var(--herb);
+        border: 1px solid var(--herb);
+        color: #0b100d;
+        font-weight: 600;
+        border-radius: 9px;
+        padding: 9px 14px;
+        font-size: 13px;
+        cursor: pointer;
+      }
+      .primary:hover { filter: brightness(1.08); }
+
+      .examples {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 10px 0 0;
+        padding: 0;
+        list-style: none;
+      }
+      .examples button {
+        background: transparent;
+        border: 1px dashed var(--line);
+        color: var(--text-3);
+        border-radius: 999px;
+        padding: 4px 10px;
+        font-size: 12px;
+        font-family: inherit;
+        cursor: pointer;
+      }
+      .examples button:hover { color: var(--text-2); border-color: #3a5147; }
+
+      .orders {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 12px 0 0;
+        padding: 0;
+        list-style: none;
+      }
+      .orders li {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border-radius: 999px;
+        padding: 5px 6px 5px 12px;
+        font-size: 12.5px;
+        border: 1px solid;
+      }
+      .orders li.herb { border-color: rgba(25,158,112,.5); color: #8ff0c8; background: rgba(25,158,112,.1); }
+      .orders li.pred { border-color: rgba(217,89,38,.5); color: #ffb896; background: rgba(217,89,38,.1); }
+      .orders li button {
+        background: transparent;
+        border: none;
+        color: inherit;
+        opacity: 0.7;
+        cursor: pointer;
+        font-size: 14px;
+        line-height: 1;
+        padding: 2px 6px;
+      }
+      .orders li button:hover { opacity: 1; }
+
+      .status { margin: 12px 0 0; font-size: 13px; color: var(--text-2); min-height: 18px; }
+      .status.bad { color: #ffb4b4; }
+      .status.good { color: #8ff0c8; }
+
+      .journal {
+        list-style: none;
+        margin: 10px 0 8px;
+        padding: 0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 10px;
+        font-size: 12px;
+        color: var(--text-3);
+      }
+      .journal li {
+        background: var(--panel-2);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 3px 10px;
+      }
+      .journal li b { color: var(--text-2); font-weight: 500; }
+
+      canvas#world { cursor: crosshair; }
+
+      .error {
+        margin: 0;
+        padding: 10px 12px;
+        border-radius: 10px;
+        background: #3a1b1b;
+        color: #ffb4b4;
+        font-size: 13px;
+      }
+
+      .foot { color: var(--text-3); font-size: 12px; }
+      .foot code { color: var(--text-2); }
+
+      @media (max-width: 560px) {
+        .tile .v { font-size: 18px; }
+        header h1 { font-size: 20px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header class="top">
+        <div>
+          <h1>Пиксель-ферма 2.0</h1>
+          <p class="subtitle">
+            Мир живёт на сервере круглосуточно. Эта страница ничего не считает —
+            она только смотрит и рисует то, что уже посчитано.
+          </p>
+        </div>
+        <div class="pulse" id="pulse"><i></i><span id="pulse-text">подключаюсь…</span></div>
+      </header>
+
+      <p class="error" id="error" hidden></p>
+
+      <div class="tiles">
+        <div class="tile">
+          <div class="k"><span class="dot herb"></span>Травоядные</div>
+          <div class="v" id="herb-count">—</div>
+        </div>
+        <div class="tile">
+          <div class="k"><span class="dot pred"></span>Хищники</div>
+          <div class="v" id="pred-count">—</div>
+        </div>
+        <div class="tile">
+          <div class="k">Еда</div>
+          <div class="v" id="food-count">—</div>
+        </div>
+        <div class="tile">
+          <div class="k">Поколение</div>
+          <div class="v" id="generation">—</div>
+        </div>
+        <div class="tile">
+          <div class="k">Тик</div>
+          <div class="v" id="tick">—</div>
+        </div>
+        <div class="tile">
+          <div class="k">Скорость, ген</div>
+          <div class="v" id="speeds">—</div>
+        </div>
+      </div>
+
+      <div class="stage"><canvas id="world"></canvas></div>
+
+      <div class="legend">
+        <span><i class="swatch" style="background:var(--herb)"></i>травоядное</span>
+        <span><i class="swatch" style="background:var(--pred)"></i>хищник (кольцо — вышел на охоту)</span>
+        <span><i class="swatch sq" style="background:var(--food)"></i>еда</span>
+        <span><i class="swatch stone"></i>камни и вода</span>
+        <span><i class="swatch zone"></i>плодородная зона</span>
+        <span>яркость точки — насколько агент сыт</span>
+      </div>
+
+      <section class="panel">
+        <div class="tools-row">
+          <div class="tool-group" role="group" aria-label="Что делает клик по карте">
+            <span class="tool-label">Клик по карте:</span>
+            <button class="tool" type="button" data-tool="feed" aria-pressed="true">Подкормить</button>
+            <button class="tool" type="button" data-tool="herbivore" aria-pressed="false">+ травоядное</button>
+            <button class="tool" type="button" data-tool="predator" aria-pressed="false">+ хищник</button>
+            <button class="tool" type="button" data-tool="obstacle" aria-pressed="false">Камень</button>
+          </div>
+          <div class="tool-group">
+            <span class="tool-label">Катаклизм:</span>
+            <button class="danger" type="button" id="drought">Засуха</button>
+            <button class="danger" type="button" id="plague">Мор</button>
+          </div>
+        </div>
+        <div class="command-row">
+          <select id="species" aria-label="Кому отдать приказ">
+            <option value="herbivore">Травоядным</option>
+            <option value="predator">Хищникам</option>
+          </select>
+          <input
+            type="text"
+            id="command"
+            maxlength="200"
+            placeholder="Например: соберитесь вокруг одного хищника и убейте"
+            aria-label="Команда виду"
+          />
+          <button class="primary" type="button" id="send">Отдать приказ</button>
+        </div>
+
+        <ul class="examples" id="examples">
+          <li><button type="button" data-species="herbivore">соберитесь вокруг одного хищника и убейте</button></li>
+          <li><button type="button" data-species="herbivore">разбегайтесь врассыпную</button></li>
+          <li><button type="button" data-species="herbivore">соберитесь в центре карты</button></li>
+          <li><button type="button" data-species="predator">охотьтесь без передышки</button></li>
+          <li><button type="button" data-species="herbivore">отбой, живите как обычно</button></li>
+        </ul>
+
+        <ul class="orders" id="orders"></ul>
+        <p class="status" id="status">Выберите инструмент и кликните по карте — или отдайте приказ словами.</p>
+        <ul class="journal" id="journal"></ul>
+      </section>
+
+      <section class="panel">
+        <div class="chart-head">
+          <div>
+            <h2>Популяции во времени</h2>
+            <p class="hint">Снимок численности каждые 20 тиков — примерно раз в минуту.</p>
+          </div>
+          <div style="display:flex; gap:12px; align-items:center">
+            <div class="chart-legend">
+              <span><i class="swatch" style="background:var(--herb)"></i>травоядные</span>
+              <span><i class="swatch" style="background:var(--pred)"></i>хищники</span>
+            </div>
+            <button class="toggle" id="table-toggle" type="button">Таблица</button>
+          </div>
+        </div>
+
+        <div class="chart-wrap">
+          <svg id="chart" role="img" aria-label="График численности травоядных и хищников по времени"></svg>
+          <div class="tooltip" id="tooltip"></div>
+        </div>
+
+        <table class="data" id="table" hidden>
+          <thead>
+            <tr><th>Время</th><th>Травоядные</th><th>Хищники</th><th>Еда</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+
+      <p class="foot">
+        Классика «хищник-жертва»: хищников становится больше — травоядные убывают —
+        хищникам нечего есть — они убывают — стадо восстанавливается. Линии на графике
+        должны колебаться, а не замирать.
+      </p>
+    </div>
+
+    <!--
+      Никаких внешних библиотек: страница должна открываться двойным кликом с
+      диска и работать на телефоне. Раньше здесь подключался supabase-js с CDN,
+      и если он не загружался, скрипт падал на первой строке, а страница молча
+      застывала на «подключаюсь…». Теперь это обычные запросы через fetch.
+    -->
+    <script>
+      // Анонимный ключ публичен по назначению: RLS разрешает только чтение мира.
+      const SUPABASE_URL = "https://vdywvbioyunhhhvujowv.supabase.co";
+      const SUPABASE_ANON_KEY =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZkeXd2YmlveXVuaGhodnVqb3d2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk4NDUwMzQsImV4cCI6MjEwNTQyMTAzNH0.CVX4_RotQnSJDXFwak_5I6_sPY-07y7l1TpkTAUTKEQ";
+
+      const GROUND_TEXTURE =
+        "https://d8j0ntlcm91z4.cloudfront.net/user_38hVkwfIcxKuFfa4iWUIfoCmgDn/hf_20260919_214320_be8c1ac5-79b3-4626-9df2-d07bda938b57.png";
+
+      const FALLBACK_POLL_MS = 3000;
+      const TWEEN_MS = 2600;
+      const HISTORY_POINTS = 180;
+      const SATIATED_AT = 150; // как в simulation.ts: выше — хищник сыт и не охотится
+
+      const COLORS = {
+        herb: "#199e70",
+        pred: "#d95926",
+        food: "#7bd88f",
+        stone: "#1b2620",
+      };
+
+      const REQUEST_TIMEOUT_MS = 12000;
+
+      // Минимальный клиент вместо библиотеки: нужны только чтение таблиц,
+      // вызов функций и вызов Edge Function. Запрос всегда с таймаутом —
+      // иначе на плохой связи страница висит без объяснений.
+      async function request(path, options = {}) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+        try {
+          const response = await fetch(SUPABASE_URL + path, {
+            ...options,
+            signal: controller.signal,
+            headers: {
+              apikey: SUPABASE_ANON_KEY,
+              Authorization: "Bearer " + SUPABASE_ANON_KEY,
+              "Content-Type": "application/json",
+              ...(options.headers ?? {}),
+            },
+          });
+
+          const text = await response.text();
+          const body = text ? JSON.parse(text) : null;
+
+          if (!response.ok) {
+            // PostgREST кладёт человеческое сообщение в message — в наших
+            // функциях оно уже по-русски.
+            throw new Error((body && (body.message || body.error)) || "HTTP " + response.status);
+          }
+          return body;
+        } catch (e) {
+          if (e.name === "AbortError") throw new Error("сервер не ответил за 12 секунд");
+          if (e instanceof TypeError) throw new Error("нет связи с сервером");
+          throw e;
+        } finally {
+          clearTimeout(timer);
+        }
+      }
+
+      const select = (table, query = "") => request("/rest/v1/" + table + (query ? "?" + query : ""));
+
+      const rpc = (fn, args) =>
+        request("/rest/v1/rpc/" + fn, { method: "POST", body: JSON.stringify(args ?? {}) });
+
+      const invoke = (fn, body) =>
+        request("/functions/v1/" + fn, { method: "POST", body: JSON.stringify(body ?? {}) });
+
+      const el = (id) => document.getElementById(id);
+      const canvas = el("world");
+      const ctx = canvas.getContext("2d");
+
+      let world = { width: 100, height: 100, tick_count: null, last_tick_at: null };
+      let food = [];
+      let obstacles = [];
+      let zones = [];
+      let history = [];
+      let tracked = new Map();
+      let flashes = []; // вспышки рождений и смертей
+      let tweenStart = performance.now();
+      let inFlight = false;
+      let firstFrame = true;
+      let lastTransform = null;
+      let tool = "feed";
+
+      // Текстура земли необязательна: не загрузилась — просто останется фон.
+      const ground = new Image();
+      ground.crossOrigin = "anonymous";
+      let groundPattern = null;
+      ground.onload = () => {
+        groundPattern = ctx.createPattern(ground, "repeat");
+      };
+      ground.src = GROUND_TEXTURE;
+
+      const avg = (xs) => (xs.length ? xs.reduce((s, v) => s + v, 0) / xs.length : 0);
+
+      function showError(message) {
+        const node = el("error");
+        node.hidden = !message;
+        node.textContent = message ? "Не удалось прочитать мир: " + message : "";
+      }
+
+      function setPulse(iso) {
+        const node = el("pulse");
+        const text = el("pulse-text");
+        if (!iso) {
+          text.textContent = "нет связи";
+          node.classList.add("stale");
+          return;
+        }
+        const sec = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 1000));
+        const stale = sec > 20;
+        node.classList.toggle("stale", stale);
+        text.textContent = stale
+          ? "мир молчит " + (sec < 60 ? sec + " с" : Math.round(sec / 60) + " мин")
+          : "мир живёт · тик " + sec + " с назад";
+      }
+
+      function applyAgents(agents) {
+        const now = performance.now();
+        const progress = Math.min((now - tweenStart) / TWEEN_MS, 1);
+        const next = new Map();
+
+        for (const a of agents) {
+          const prev = tracked.get(a.id);
+          const fromX = prev ? prev.fromX + (prev.toX - prev.fromX) * progress : a.x;
+          const fromY = prev ? prev.fromY + (prev.toY - prev.fromY) * progress : a.y;
+          if (!prev && !firstFrame) flashes.push({ x: a.x, y: a.y, born: now, kind: "birth" });
+          next.set(a.id, {
+            fromX,
+            fromY,
+            toX: a.x,
+            toY: a.y,
+            energy: a.energy,
+            type: a.type,
+            // Направление движения — чтобы агент не выглядел статичной точкой.
+            angle: Math.atan2(a.y - fromY, a.x - fromX),
+          });
+        }
+
+        // Исчезнувшие агенты — вспышка на последнем месте.
+        if (!firstFrame) {
+          for (const [id, prev] of tracked) {
+            if (!next.has(id)) {
+              flashes.push({ x: prev.toX, y: prev.toY, born: now, kind: prev.type === "predator" ? "death" : "eaten" });
+            }
+          }
+        }
+
+        tracked = next;
+        tweenStart = now;
+        firstFrame = false;
+
+        const herb = agents.filter((a) => a.type !== "predator");
+        const pred = agents.filter((a) => a.type === "predator");
+        el("herb-count").textContent = herb.length;
+        el("pred-count").textContent = pred.length;
+        el("generation").textContent = agents.reduce((m, a) => Math.max(m, a.generation), 0);
+        el("speeds").innerHTML =
+          avg(herb.map((a) => a.speed)).toFixed(2) +
+          " <small>/</small> " +
+          avg(pred.map((a) => a.speed)).toFixed(2);
+      }
+
+      async function refresh() {
+        if (inFlight) return;
+        inFlight = true;
+        try {
+          const [worldRows, agents, foodRows] = await Promise.all([
+            select("world_state", "select=*&id=eq.1"),
+            select("agents", "select=id,type,x,y,energy,speed,generation"),
+            select("food", "select=id,x,y"),
+          ]);
+
+          if (worldRows && worldRows[0]) world = worldRows[0];
+          food = foodRows ?? [];
+          applyAgents(agents ?? []);
+
+          el("tick").textContent = world.tick_count ?? "—";
+          el("food-count").textContent = food.length;
+          setPulse(world.last_tick_at);
+          showError(null);
+        } catch (e) {
+          showError(e && e.message ? e.message : String(e));
+          setPulse(null);
+        } finally {
+          inFlight = false;
+        }
+      }
+
+      async function loadMap() {
+        const [obstacleRows, zoneRows] = await Promise.all([
+          select("obstacles", "select=*"),
+          select("food_zones", "select=*"),
+        ]);
+        obstacles = obstacleRows ?? [];
+        zones = zoneRows ?? [];
+      }
+
+      async function loadHistory() {
+        const rows = await select(
+          "population_history",
+          "select=snapshot_at,herbivore_count,predator_count,food_count" +
+            "&order=id.desc&limit=" + HISTORY_POINTS,
+        );
+        history = (rows ?? []).slice().reverse();
+        drawChart();
+        drawTable();
+      }
+
+      /* ---------- карта ---------- */
+
+      function draw() {
+        const rect = canvas.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        const w = Math.round(rect.width * dpr);
+        const h = Math.round(rect.height * dpr);
+        if (canvas.width !== w || canvas.height !== h) {
+          canvas.width = w;
+          canvas.height = h;
+        }
+
+        const scale = Math.min(rect.width / world.width, rect.height / world.height) * dpr;
+        const ox = (canvas.width - world.width * scale) / 2;
+        const oy = (canvas.height - world.height * scale) / 2;
+        const sx = (x) => ox + x * scale;
+        const sy = (y) => oy + y * scale;
+        lastTransform = { ox, oy, scale, dpr };
+        const now = performance.now();
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Земля: тёмная основа плюс, если загрузилась, мягкая фактура сверху.
+        ctx.fillStyle = "#101812";
+        ctx.fillRect(ox, oy, world.width * scale, world.height * scale);
+        if (groundPattern) {
+          ctx.save();
+          ctx.globalAlpha = 0.22;
+          ctx.globalCompositeOperation = "soft-light";
+          ctx.fillStyle = groundPattern;
+          ctx.fillRect(ox, oy, world.width * scale, world.height * scale);
+          ctx.restore();
+        }
+
+        // Плодородные зоны — мягкое свечение, а не плоский круг.
+        for (const z of zones) {
+          const r = z.radius * scale;
+          const g = ctx.createRadialGradient(sx(z.x), sy(z.y), 0, sx(z.x), sy(z.y), r);
+          g.addColorStop(0, "rgba(25, 158, 112, 0.20)");
+          g.addColorStop(1, "rgba(25, 158, 112, 0)");
+          ctx.fillStyle = g;
+          ctx.beginPath();
+          ctx.arc(sx(z.x), sy(z.y), r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Препятствия.
+        for (const o of obstacles) {
+          ctx.fillStyle = COLORS.stone;
+          ctx.beginPath();
+          if (o.shape === "circle") ctx.arc(sx(o.x), sy(o.y), o.radius * scale, 0, Math.PI * 2);
+          else if (ctx.roundRect) ctx.roundRect(sx(o.x), sy(o.y), o.width * scale, o.height * scale, 4 * dpr);
+          else ctx.rect(sx(o.x), sy(o.y), o.width * scale, o.height * scale);
+          ctx.fill();
+          ctx.strokeStyle = "rgba(255,255,255,0.07)";
+          ctx.lineWidth = dpr;
+          ctx.stroke();
+        }
+
+        // Еда — маленькие ростки.
+        ctx.strokeStyle = COLORS.food;
+        ctx.lineWidth = Math.max(scale * 0.12, 1);
+        for (const f of food) {
+          const x = sx(f.x);
+          const y = sy(f.y);
+          ctx.beginPath();
+          ctx.moveTo(x, y + scale * 0.32);
+          ctx.lineTo(x, y - scale * 0.22);
+          ctx.stroke();
+          ctx.fillStyle = COLORS.food;
+          ctx.beginPath();
+          ctx.arc(x, y - scale * 0.3, Math.max(scale * 0.2, 1), 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Агенты: цвет — вид, яркость и размер — сытость.
+        const progress = Math.min((now - tweenStart) / TWEEN_MS, 1);
+        for (const a of tracked.values()) {
+          const x = sx(a.fromX + (a.toX - a.fromX) * progress);
+          const y = sy(a.fromY + (a.toY - a.fromY) * progress);
+          const predator = a.type === "predator";
+          const full = Math.max(0.15, Math.min(a.energy / (predator ? 200 : 140), 1));
+          const r = Math.max(scale * (predator ? 0.8 : 0.58), 2);
+
+          if (predator && a.energy < SATIATED_AT) {
+            // Кольцо — признак того, что хищник голоден и охотится.
+            ctx.strokeStyle = "rgba(217, 89, 38, 0.45)";
+            ctx.lineWidth = Math.max(dpr, scale * 0.12);
+            ctx.beginPath();
+            ctx.arc(x, y, r * 2.1, 0, Math.PI * 2);
+            ctx.stroke();
+          }
+
+          ctx.globalAlpha = 0.35 + full * 0.65;
+          ctx.fillStyle = predator ? COLORS.pred : COLORS.herb;
+          ctx.beginPath();
+          ctx.arc(x, y, r, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Светлый «нос» по направлению движения — видно, куда бежит.
+          ctx.globalAlpha = 0.5 + full * 0.4;
+          ctx.fillStyle = predator ? "#ffb896" : "#8ff0c8";
+          ctx.beginPath();
+          ctx.arc(x + Math.cos(a.angle) * r * 0.55, y + Math.sin(a.angle) * r * 0.55, r * 0.42, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.globalAlpha = 1;
+        }
+
+        // Вспышки рождений и смертей живут 900 мс.
+        flashes = flashes.filter((f) => now - f.born < 900);
+        for (const f of flashes) {
+          const t = (now - f.born) / 900;
+          const r = scale * (0.6 + t * 2.2);
+          ctx.globalAlpha = (1 - t) * 0.7;
+          ctx.strokeStyle =
+            f.kind === "birth" ? "rgba(139, 240, 200, 0.9)" : f.kind === "eaten" ? "rgba(217, 89, 38, 0.9)" : "rgba(255,255,255,0.7)";
+          ctx.lineWidth = Math.max(dpr, scale * 0.14);
+          ctx.beginPath();
+          ctx.arc(sx(f.x), sy(f.y), r, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.globalAlpha = 1;
+        }
+
+        // Виньетка, чтобы край карты не выглядел обрезанным.
+        const vg = ctx.createRadialGradient(
+          canvas.width / 2, canvas.height / 2, Math.min(canvas.width, canvas.height) * 0.35,
+          canvas.width / 2, canvas.height / 2, Math.max(canvas.width, canvas.height) * 0.75,
+        );
+        vg.addColorStop(0, "rgba(0,0,0,0)");
+        vg.addColorStop(1, "rgba(0,0,0,0.45)");
+        ctx.fillStyle = vg;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        requestAnimationFrame(draw);
+      }
+
+      /* ---------- график популяций ---------- */
+
+      const chart = el("chart");
+      const NS = "http://www.w3.org/2000/svg";
+      const PAD = { top: 14, right: 54, bottom: 22, left: 34 };
+      let chartGeom = null;
+
+      const node = (name, attrs, text) => {
+        const n = document.createElementNS(NS, name);
+        for (const k in attrs) n.setAttribute(k, attrs[k]);
+        if (text !== undefined) n.textContent = text;
+        return n;
+      };
+
+      function niceTicks(max) {
+        const step = Math.max(1, Math.pow(10, Math.floor(Math.log10(max || 1))) / 2);
+        const out = [];
+        for (let v = 0; v <= max; v += step) out.push(v);
+        if (out[out.length - 1] !== max) out.push(max);
+        return out.length > 6 ? out.filter((_, i) => i % 2 === 0 || i === out.length - 1) : out;
+      }
+
+      function drawChart() {
+        chart.textContent = "";
+        if (history.length < 2) {
+          chart.appendChild(
+            node("text", { x: 12, y: 24, class: "axis" }, "Ждём первых снимков популяции…"),
+          );
+          return;
+        }
+
+        const box = chart.getBoundingClientRect();
+        const w = box.width || 640;
+        const h = box.height || 240;
+        chart.setAttribute("viewBox", `0 0 ${w} ${h}`);
+
+        const maxY = Math.max(
+          10,
+          ...history.map((p) => Math.max(p.herbivore_count, p.predator_count)),
+        );
+        const x = (i) => PAD.left + (i / (history.length - 1)) * (w - PAD.left - PAD.right);
+        const y = (v) => h - PAD.bottom - (v / maxY) * (h - PAD.top - PAD.bottom);
+        chartGeom = { x, y, w, h, maxY };
+
+        // Сетка и подписи оси — намеренно тусклые, данные важнее.
+        for (const t of niceTicks(maxY)) {
+          chart.appendChild(node("line", { class: "grid", x1: PAD.left, x2: w - PAD.right, y1: y(t), y2: y(t) }));
+          chart.appendChild(node("text", { class: "axis", x: 4, y: y(t) + 4 }, String(Math.round(t))));
+        }
+
+        const first = new Date(history[0].snapshot_at);
+        const last = new Date(history[history.length - 1].snapshot_at);
+        const hm = (d) => String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+        chart.appendChild(node("text", { class: "axis", x: PAD.left, y: h - 6 }, hm(first)));
+        chart.appendChild(
+          node("text", { class: "axis", x: w - PAD.right, y: h - 6, "text-anchor": "end" }, hm(last)),
+        );
+
+        const series = [
+          { key: "herbivore_count", color: COLORS.herb, label: "травоядные" },
+          { key: "predator_count", color: COLORS.pred, label: "хищники" },
+        ];
+
+        for (const s of series) {
+          const d = history.map((p, i) => (i ? "L" : "M") + x(i) + " " + y(p[s.key])).join(" ");
+          chart.appendChild(node("path", { class: "line", d, stroke: s.color }));
+
+          // Прямая подпись у конца линии —опознание не только по цвету.
+          const lastValue = history[history.length - 1][s.key];
+          chart.appendChild(
+            node(
+              "text",
+              {
+                class: "end-label",
+                x: w - PAD.right + 8,
+                y: y(lastValue) + 4,
+                fill: s.color,
+              },
+              String(lastValue),
+            ),
+          );
+        }
+      }
+
+      const tooltip = el("tooltip");
+      const chartWrap = document.querySelector(".chart-wrap");
+      chartWrap.addEventListener("pointermove", (e) => {
+        if (!chartGeom || history.length < 2) return;
+        const box = chart.getBoundingClientRect();
+        const px = e.clientX - box.left;
+        const i = Math.max(
+          0,
+          Math.min(
+            history.length - 1,
+            Math.round(
+              ((px - PAD.left) / (chartGeom.w - PAD.left - PAD.right)) * (history.length - 1),
+            ),
+          ),
+        );
+        const p = history[i];
+        chart.querySelectorAll(".crosshair, .hover-dot").forEach((n) => n.remove());
+        chart.appendChild(
+          node("line", { class: "crosshair", x1: chartGeom.x(i), x2: chartGeom.x(i), y1: PAD.top, y2: chartGeom.h - PAD.bottom }),
+        );
+        for (const s of [
+          { key: "herbivore_count", color: COLORS.herb },
+          { key: "predator_count", color: COLORS.pred },
+        ]) {
+          chart.appendChild(
+            node("circle", {
+              class: "hover-dot",
+              cx: chartGeom.x(i),
+              cy: chartGeom.y(p[s.key]),
+              r: 4,
+              fill: s.color,
+              stroke: "#141b17",
+              "stroke-width": 2,
+            }),
+          );
+        }
+        const t = new Date(p.snapshot_at);
+        tooltip.innerHTML =
+          String(t.getHours()).padStart(2, "0") + ":" + String(t.getMinutes()).padStart(2, "0") +
+          " · травоядные <b>" + p.herbivore_count + "</b> · хищники <b>" + p.predator_count + "</b>";
+        tooltip.style.opacity = "1";
+        tooltip.style.left = Math.min(chartGeom.x(i) + 12, chartGeom.w - 210) + "px";
+        tooltip.style.top = "8px";
+      });
+      chartWrap.addEventListener("pointerleave", () => {
+        tooltip.style.opacity = "0";
+        chart.querySelectorAll(".crosshair, .hover-dot").forEach((n) => n.remove());
+      });
+
+      function drawTable() {
+        const body = el("table").querySelector("tbody");
+        body.textContent = "";
+        for (const p of history.slice(-20).reverse()) {
+          const t = new Date(p.snapshot_at);
+          const tr = document.createElement("tr");
+          tr.innerHTML =
+            "<td>" + String(t.getHours()).padStart(2, "0") + ":" + String(t.getMinutes()).padStart(2, "0") + "</td>" +
+            "<td>" + p.herbivore_count + "</td><td>" + p.predator_count + "</td><td>" + p.food_count + "</td>";
+          body.appendChild(tr);
+        }
+      }
+
+      el("table-toggle").addEventListener("click", () => {
+        const table = el("table");
+        table.hidden = !table.hidden;
+        el("table-toggle").textContent = table.hidden ? "Таблица" : "Скрыть таблицу";
+      });
+
+      window.addEventListener("resize", drawChart);
+
+      /* ---------- ручное вмешательство ---------- */
+
+      const statusNode = el("status");
+
+      function setStatus(text, kind) {
+        statusNode.textContent = text;
+        statusNode.className = "status" + (kind ? " " + kind : "");
+      }
+
+      // Один и тот же обработчик для кнопок и для клика по карте:
+      // выполняет действие, показывает результат и сразу перечитывает мир.
+      async function act(fn, args, describe) {
+        const buttons = document.querySelectorAll(".tool, .danger");
+        buttons.forEach((b) => (b.disabled = true));
+        setStatus("…", null);
+        try {
+          const data = await rpc(fn, args);
+          setStatus(describe(data), "good");
+          // Своё действие показываем сразу, не дожидаясь Realtime:
+          // он может быть недоступен, а обратная связь нужна всегда.
+          await Promise.all([refresh(), loadMap(), loadJournal()]);
+        } catch (e) {
+          // Сообщения об отказах приходят из базы уже на русском.
+          setStatus(e && e.message ? e.message : String(e), "bad");
+        } finally {
+          buttons.forEach((b) => (b.disabled = false));
+        }
+      }
+
+      document.querySelectorAll(".tool").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          tool = btn.dataset.tool;
+          document.querySelectorAll(".tool").forEach((b) =>
+            b.setAttribute("aria-pressed", String(b === btn)),
+          );
+          setStatus("Кликните по карте: " + btn.textContent.toLowerCase(), null);
+        });
+      });
+
+      canvas.addEventListener("click", (e) => {
+        if (!lastTransform) return;
+        const rect = canvas.getBoundingClientRect();
+        const { ox, oy, scale, dpr } = lastTransform;
+        const x = ((e.clientX - rect.left) * dpr - ox) / scale;
+        const y = ((e.clientY - rect.top) * dpr - oy) / scale;
+        if (x < 0 || y < 0 || x > world.width || y > world.height) {
+          setStatus("Это за краем мира — кликните внутри карты.", "bad");
+          return;
+        }
+
+        if (tool === "feed") {
+          act("feed_world", { p_x: x, p_y: y, p_amount: 12 }, (n) => "Подкормил: " + n + " шт");
+        } else if (tool === "obstacle") {
+          act("toggle_obstacle", { p_x: x, p_y: y }, (r) =>
+            r === "added" ? "Камень поставлен" : "Камень убран");
+        } else {
+          act("spawn_agent", { p_type: tool, p_x: x, p_y: y }, () =>
+            tool === "predator" ? "Хищник подселён" : "Травоядное подселено");
+        }
+      });
+
+      el("drought").addEventListener("click", () => {
+        if (!confirm("Засуха уничтожит примерно 60% еды на карте. Продолжить?")) return;
+        act("cataclysm", { p_kind: "drought" }, (n) => "Засуха: еды стало меньше на " + n);
+      });
+
+      el("plague").addEventListener("click", () => {
+        if (!confirm("Мор убьёт примерно 30% популяции. Продолжить?")) return;
+        act("cataclysm", { p_kind: "plague" }, (n) => "Мор: погибло " + n);
+      });
+
+      const JOURNAL = {
+        feed: (d) => "подкормка · " + (d.amount ?? "?") + " шт",
+        spawn: (d) => "подселили: " + (d.type === "predator" ? "хищник" : "травоядное"),
+        obstacle_added: () => "поставлен камень",
+        obstacle_removed: () => "убран камень",
+        cataclysm: (d) => (d.kind === "plague" ? "мор" : "засуха") + " · −" + (d.removed ?? 0),
+        order: (d) =>
+          "приказ " + (d.species === "predator" ? "хищникам" : "травоядным") + ": " + (d.kind ?? ""),
+        order_cancelled: (d) =>
+          "приказ отменён (" + (d.species === "predator" ? "хищники" : "травоядные") + ")",
+      };
+
+      function renderJournal(rows) {
+        const list = el("journal");
+        list.textContent = "";
+        for (const row of rows) {
+          const describe = JOURNAL[row.action];
+          const time = new Date(row.at);
+          const li = document.createElement("li");
+          li.innerHTML =
+            "<b>" + String(time.getHours()).padStart(2, "0") + ":" +
+            String(time.getMinutes()).padStart(2, "0") + "</b> " +
+            (describe ? describe(row.detail ?? {}) : row.action);
+          list.appendChild(li);
+        }
+      }
+
+      let journal = [];
+
+      async function loadJournal() {
+        const rows = await select("intervention_log", "select=action,detail,at&order=id.desc&limit=8");
+        journal = rows ?? [];
+        renderJournal(journal);
+      }
+
+      /* ---------- команды видам ---------- */
+
+      // Правила мира понимают пять примитивов. Текст в примитив превращает
+      // Edge Function "command" через Claude — но только если в Vault лежит
+      // ключ. Если ключа нет, разбираем сами, по ключевым словам: грубее,
+      // зато работает всегда и не стоит денег.
+      const RULES = [
+        { kind: "cancel", re: /отмен|отбой|как обычно|как раньше|свобод|разойд|хватит|забуд/ },
+        { kind: "mob", re: /уб[еи]й|убив|убит|атак|напад|окруж|толп|заби|раст?опч|задав|отомст|порв/ },
+        { kind: "flee", re: /бег|разбеж|убега|спаса|пряч|врассып|отступ|уход|драп/ },
+        { kind: "gather", re: /собер|собрат|собир|вместе|куч|сомкн|\bстройс|сойд|центр/ },
+        { kind: "hunt", re: /охот|лови|ловит|догон|жри|ешь|загон|presledu|преслед/ },
+        { kind: "rest", re: /сто[йя]|отдых|отдых|замри|не двиг|ждит|подожд|привал|спат/ },
+      ];
+
+      const KIND_LABEL = {
+        mob: "травля: сойтись на одном хищнике и бить числом",
+        flee: "бегство врассыпную",
+        gather: "сбор в одной точке",
+        hunt: "неотступная охота",
+        rest: "стоять и копить силы",
+      };
+
+      function parseByKeywords(species, text) {
+        const lower = text.toLowerCase();
+        for (const rule of RULES) {
+          if (!rule.re.test(lower)) continue;
+
+          // Приказ, недоступный виду, — это отказ, а не повод молча
+          // подставить другой: иначе человек не поймёт, что произошло.
+          if (rule.kind === "mob" && species !== "herbivore") {
+            return { error: "Травить хищника может только стадо — выберите «Травоядным»." };
+          }
+          if (rule.kind === "hunt" && species !== "predator") {
+            return { error: "Охотиться могут только хищники — выберите «Хищникам»." };
+          }
+
+          const params = {};
+          if (rule.kind === "gather" || rule.kind === "flee") {
+            const point = lower.match(/(\d{1,3})\D{1,4}(\d{1,3})/);
+            if (point) {
+              params.x = Math.min(100, Number(point[1]));
+              params.y = Math.min(100, Number(point[2]));
+            } else if (/центр|середин/.test(lower)) {
+              params.x = 50;
+              params.y = 50;
+            }
+          }
+          return { kind: rule.kind, params, seconds: rule.kind === "rest" ? 45 : 75 };
+        }
+        return null;
+      }
+
+      function renderOrders(rows) {
+        const list = el("orders");
+        list.textContent = "";
+        for (const row of rows) {
+          const left = Math.max(0, Math.round((new Date(row.expires_at) - Date.now()) / 1000));
+          const li = document.createElement("li");
+          li.className = row.species === "predator" ? "pred" : "herb";
+          li.innerHTML =
+            "<span><b>" + (row.species === "predator" ? "Хищники" : "Травоядные") + "</b> · " +
+            (KIND_LABEL[row.kind] ?? row.kind) + " · " + left + " с</span>";
+          const cancel = document.createElement("button");
+          cancel.type = "button";
+          cancel.title = "Отменить приказ";
+          cancel.textContent = "×";
+          cancel.addEventListener("click", () =>
+            act("issue_order", { p_species: row.species, p_kind: "cancel" }, () => "Приказ отменён"),
+          );
+          li.appendChild(cancel);
+          list.appendChild(li);
+        }
+      }
+
+      let orders = [];
+
+      async function loadOrders() {
+        const rows = await select(
+          "orders",
+          "select=species,kind,command,expires_at&expires_at=gt." + new Date().toISOString(),
+        );
+        orders = rows ?? [];
+        renderOrders(orders);
+      }
+
+      async function sendCommand() {
+        const species = el("species").value;
+        const text = el("command").value.trim();
+        if (text.length < 2) {
+          setStatus("Напишите команду словами — например «разбегайтесь».", "bad");
+          return;
+        }
+
+        const button = el("send");
+        button.disabled = true;
+        setStatus("Разбираю команду…", null);
+
+        try {
+          // Сначала пробуем сервер: там команду читает Claude.
+          // Не ответил или ответил ошибкой — не беда, разберём сами.
+          const answer = await invoke("command", { species, text }).catch(() => null);
+
+          if (answer && answer.understood) {
+            setStatus("Понял так: " + answer.explain, "good");
+            el("command").value = "";
+            await Promise.all([loadOrders(), loadJournal()]);
+            return;
+          }
+
+          // Ключа Claude нет (или сервер не ответил) — разбираем сами.
+          const parsed = parseByKeywords(species, text);
+          if (parsed && parsed.error) {
+            setStatus(parsed.error, "bad");
+            return;
+          }
+          if (!parsed) {
+            setStatus(
+              "Не понял команду. Попробуйте по-другому: «окружите хищника и убейте», " +
+                "«разбегайтесь», «соберитесь в центре», «отдыхайте», «отбой».",
+              "bad",
+            );
+            return;
+          }
+
+          const data = await rpc("issue_order", {
+            p_species: species,
+            p_kind: parsed.kind,
+            p_params: parsed.params,
+            p_command: text,
+            p_seconds: parsed.seconds,
+            p_source: "keywords",
+          });
+
+          setStatus(
+            parsed.kind === "cancel"
+              ? "Приказ отменён — вид живёт как обычно."
+              : "Понял так (по ключевым словам): " + KIND_LABEL[parsed.kind] + ".",
+            "good",
+          );
+          el("command").value = "";
+          await Promise.all([loadOrders(), loadJournal()]);
+          if (!data && parsed.kind !== "cancel") setStatus("Приказ не применился", "bad");
+        } catch (e) {
+          setStatus(e && e.message ? e.message : String(e), "bad");
+        } finally {
+          button.disabled = false;
+        }
+      }
+
+      el("send").addEventListener("click", sendCommand);
+      el("command").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") sendCommand();
+      });
+
+      document.querySelectorAll("#examples button").forEach((b) => {
+        b.addEventListener("click", () => {
+          el("species").value = b.dataset.species;
+          el("command").value = b.textContent;
+          sendCommand();
+        });
+      });
+
+      /* ---------- запуск ---------- */
+
+      async function start() {
+        // Карта и мир — обязательны. Остальное (история, журнал, приказы)
+        // не должно мешать показать мир, если именно эта таблица недоступна.
+        await loadMap();
+        await refresh();
+        requestAnimationFrame(draw);
+
+        await Promise.allSettled([loadHistory(), loadJournal(), loadOrders()]);
+
+        // Опрос вместо Realtime: тик и так раз в 3 секунды, а подписка тянула
+        // за собой библиотеку и websocket, который на мобильной сети рвётся.
+        setInterval(() => refresh().catch(() => {}), FALLBACK_POLL_MS);
+        setInterval(() => loadHistory().catch(() => {}), 60000);
+        setInterval(() => loadJournal().catch(() => {}), 20000);
+        setInterval(() => loadOrders().catch(() => {}), 15000);
+        setInterval(() => setPulse(world.last_tick_at), 1000);
+        // У приказов тикает обратный отсчёт, а по истечении они пропадают сами.
+        setInterval(() => {
+          orders = orders.filter((o) => new Date(o.expires_at) > Date.now());
+          renderOrders(orders);
+        }, 1000);
+      }
+
+      // Молчаливое зависание на «подключаюсь…» — худшее поведение: человек не
+      // понимает, сломалась страница или просто медленно. Говорим прямо.
+      start().catch((e) => {
+        const reason = e && e.message ? e.message : String(e);
+        showError(reason + ". Проверьте интернет и обновите страницу.");
+        setPulse(null);
+      });
+
+      window.addEventListener("unhandledrejection", (e) => {
+        showError("Сбой: " + (e.reason && e.reason.message ? e.reason.message : e.reason));
+      });
+    </script>
+  </body>
+</html>
